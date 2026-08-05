@@ -135,7 +135,7 @@ a{ color:inherit; text-decoration:none; }
 .back__result p{ margin:0; font-size:13px; color:var(--ink-soft); line-height:1.45; }
 
 /* ---- lightbox ---- */
-.lb{ position:fixed; inset:0; background:rgba(0,10,25,.94); z-index:99999; display:none; }
+.lb{ position:fixed; inset:0; background:#01142b; z-index:99999; display:none; }
 .lb.is-open{ display:block; }
 .lb .slider{ position:absolute; inset:0; }
 .lb .slider__slide{ display:flex; align-items:center; justify-content:center; }
@@ -206,15 +206,20 @@ a{ color:inherit; text-decoration:none; }
     }
     // controlli
     var prev,next,count,dots;
-    if(opts.controls && n>1){
-      prev=el("button","gal-nav gal-nav--prev","&#8249;"); prev.setAttribute("aria-label","Precedente");
-      next=el("button","gal-nav gal-nav--next","&#8250;"); next.setAttribute("aria-label","Successiva");
-      count=el("div","gal-count","1/"+n);
-      dots=el("div","gal-dots","");
-      for(var d=0; d<n; d++){ var s=document.createElement("span"); s.className="gal-dot"+(d===0?" is-active":""); dots.appendChild(s); }
-      root.appendChild(prev); root.appendChild(next); root.appendChild(count); root.appendChild(dots);
-      prev.addEventListener("click",function(e){ e.stopPropagation(); go(i-1); });
-      next.addEventListener("click",function(e){ e.stopPropagation(); go(i+1); });
+    if(n>1){
+      if(opts.arrows){
+        prev=el("button","gal-nav gal-nav--prev","&#8249;"); prev.setAttribute("aria-label","Precedente");
+        next=el("button","gal-nav gal-nav--next","&#8250;"); next.setAttribute("aria-label","Successiva");
+        root.appendChild(prev); root.appendChild(next);
+        prev.addEventListener("click",function(e){ e.stopPropagation(); go(i-1); });
+        next.addEventListener("click",function(e){ e.stopPropagation(); go(i+1); });
+      }
+      if(opts.counter){ count=el("div","gal-count","1/"+n); root.appendChild(count); }
+      if(opts.dots!==false){
+        dots=el("div","gal-dots","");
+        for(var d=0; d<n; d++){ var s=document.createElement("span"); s.className="gal-dot"+(d===0?" is-active":""); dots.appendChild(s); }
+        root.appendChild(dots);
+      }
     }
     function el(tag,cls,html){ var e=document.createElement(tag); e.className=cls; if(tag==="button")e.type="button"; e.innerHTML=html; return e; }
     function ui(){
@@ -263,18 +268,17 @@ a{ color:inherit; text-decoration:none; }
     lbTrack.innerHTML = imgs.map(function(u){
       return '<div class="slider__slide"><img src="'+esc(u)+'" alt=""></div>';
     }).join("");
-    lb.classList.add("is-open"); lb.setAttribute("aria-hidden","false");
     // reset eventuali controlli precedenti
     [].forEach.call(lb.querySelectorAll(".gal-nav,.gal-count,.gal-dots"),function(n){ n.remove(); });
-    initSlider(lb.querySelector(".slider"), { controls:true, start:start||0 });
-    var elFs = lb;
-    var rq = elFs.requestFullscreen||elFs.webkitRequestFullscreen||elFs.mozRequestFullScreen||elFs.msRequestFullscreen;
-    if(rq){ try{ rq.call(elFs); }catch(e){} }
+    lb.classList.add("is-open"); lb.setAttribute("aria-hidden","false");
+    initSlider(lb.querySelector(".slider"), { arrows:false, counter:true, dots:true, start:start||0 });
+    // chiede alla pagina ospite di espandere l'iframe a tutto schermo
+    try{ parent.postMessage({type:"autoteam:lightbox",open:true},"*"); }catch(e){}
   }
   function closeLightbox(){
+    if(!lb.classList.contains("is-open")) return;
     lb.classList.remove("is-open"); lb.setAttribute("aria-hidden","true"); lbTrack.innerHTML="";
-    var ex=document.exitFullscreen||document.webkitExitFullscreen||document.mozCancelFullScreen||document.msExitFullscreen;
-    if(ex && (document.fullscreenElement||document.webkitFullscreenElement)){ try{ ex.call(document); }catch(e){} }
+    try{ parent.postMessage({type:"autoteam:lightbox",open:false},"*"); }catch(e){}
   }
   lb.querySelector(".lb__close").addEventListener("click",closeLightbox);
   lb.addEventListener("click",function(e){ if(e.target===lb) closeLightbox(); });
@@ -397,7 +401,7 @@ a{ color:inherit; text-decoration:none; }
       return '<div class="slider__slide"><img src="'+esc(u)+'" alt="'+esc(car.brand+" "+car.model)+'" loading="lazy"></div>';
     }).join("");
     initSlider(slider, {
-      controls: urls.length>1,
+      arrows:false, counter:false, dots:true,
       onTap: function(idx){ openLightbox(urls, idx); }   // tap sulla foto -> fullscreen
     });
   }
