@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Le nostre offerte</title>
+
+<!-- =====================================================================
+     CONFIGURAZIONE  —  modifica solo questo blocco
+     ===================================================================== -->
+<script>
+window.WIDGET_CONFIG = {
+  API_BASE:    "https://api.intergeanordest.it",
+  API_KEY:     "YNcQtkvzHJUVTKeVk2doF0pWt8prUllDkeZE8pw7LomgIUw6xiTINjEMXe9JdSsp",
+  // Path relativo per il campo "url" del lead (il backend prefissa il dominio da solo)
+  DETAIL_PATH: "/auto/",
+  PRIVACY_URL: "https://intergeanordest.it/landing/privacy-informativa-clienti-ferrarimotors",
+  // Categoria richiesta dal backend per il form informazioni
+  LEAD_CATEGORY: "auto.info",
+  SERIALS: [
+    "11537834","11677203","11626980","11640448","11625772","11633964",
+    "11633965","10893008","11522115","11593861","9060904","9633653",
+    "11522111","9631199","11522113","11522117","11625771","11553094","11625770"
+  ]
+};
+</script>
+
+<style>
+:root{
+  --sans: "Sofia Pro", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --bg:#001733;
+  --card:#ffffff; --card-line:#cfe0ee; --card-line2:#eef3f8;
+  --ink:#1f2d3d; --ink-soft:#5a6b7b;
+  --accent:#2f9fd0; --accent-2:#42b7df; --badge-blue:#3f6fd1;
+  --cta:#ec5b45; --cta-hover:#d94b36;
+  --r-sm:12px; --r-md:16px; --r-lg:20px;
+  --shadow:0 12px 30px rgba(0,0,0,.28);
+  --shadow-hover:0 18px 40px rgba(0,0,0,.36);
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; }
+body{
+  font-family:var(--sans); color:var(--ink); background:var(--bg);
+  -webkit-font-smoothing:antialiased; padding:20px clamp(14px,3vw,40px);
+}
+button{ font-family:inherit; cursor:pointer; }
+a{ color:inherit; text-decoration:none; }
+
+.grid{ display:grid; gap:22px; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); max-width:1200px; margin:0 auto; }
+
+.flip{ perspective:1600px; }
+.flip__inner{ display:grid; transform-style:preserve-3d; transition:transform .55s cubic-bezier(.2,.7,.2,1); min-height:440px; }
+.flip.is-flipped .flip__inner{ transform:rotateY(180deg); }
+.flip__face{
+  grid-area:1/1; backface-visibility:hidden; -webkit-backface-visibility:hidden;
+  background:var(--card); border:1.5px solid var(--card-line); border-radius:var(--r-lg);
+  box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column;
+  transition:box-shadow .2s ease, transform .2s ease;
+}
+.flip__face--back{ transform:rotateY(180deg); }
+.flip:not(.is-flipped) .flip__face--front:hover{ box-shadow:var(--shadow-hover); transform:translateY(-2px); }
+
+/* ---- gallery ---- */
+.gallery{ position:relative; aspect-ratio:16/10; background:radial-gradient(120% 90% at 50% 20%,#f4f8fb 0%,#e7eef4 60%,#dbe6ee 100%); overflow:hidden; }
+.gallery__track{
+  display:flex; height:100%; overflow-x:auto; scroll-snap-type:x mandatory;
+  scroll-behavior:smooth; scrollbar-width:none; -ms-overflow-style:none;
+}
+.gallery__track::-webkit-scrollbar{ display:none; }
+.gallery__slide{ flex:0 0 100%; scroll-snap-align:center; height:100%; }
+.gallery__slide img{ width:100%; height:100%; object-fit:cover; display:block; }
+.gal-nav{
+  position:absolute; top:50%; transform:translateY(-50%);
+  width:32px; height:32px; border:0; border-radius:50%;
+  background:rgba(255,255,255,.9); color:#26333f; font-size:18px; line-height:1;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 8px rgba(0,0,0,.2); opacity:0; transition:opacity .18s; z-index:3;
+}
+.gallery:hover .gal-nav{ opacity:1; }
+.gal-nav--prev{ left:8px; } .gal-nav--next{ right:8px; }
+.gal-nav[disabled]{ opacity:0!important; pointer-events:none; }
+.gal-dots{ position:absolute; bottom:8px; left:0; right:0; display:flex; gap:5px; justify-content:center; z-index:3; }
+.gal-dot{ width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.55); box-shadow:0 0 2px rgba(0,0,0,.4); transition:background .18s,width .18s; }
+.gal-dot.is-active{ background:#fff; width:16px; border-radius:3px; }
+.gal-count{ position:absolute; top:10px; right:10px; z-index:3; background:rgba(0,0,0,.55); color:#fff; font-size:11px; font-weight:600; padding:3px 8px; border-radius:20px; }
+
+.card__badges{ position:absolute; top:12px; left:12px; display:flex; gap:6px; flex-wrap:wrap; max-width:calc(100% - 24px); z-index:3; }
+.badge{ font-size:10.5px; font-weight:700; letter-spacing:.4px; text-transform:uppercase; color:#fff; padding:5px 9px; border-radius:6px; line-height:1; white-space:nowrap; box-shadow:0 2px 6px rgba(0,0,0,.18); }
+.badge--offer{ background:var(--badge-blue); }
+.badge--stock{ background:var(--accent-2); }
+.warranty{ position:absolute; right:14px; bottom:26px; width:70px; height:70px; border-radius:50%; background:var(--accent-2); color:#fff; display:flex; align-items:center; justify-content:center; text-align:center; font-size:9.5px; font-weight:800; line-height:1.15; padding:8px; box-shadow:0 6px 16px rgba(0,0,0,.25); z-index:3; }
+
+/* ---- body ---- */
+.card__body{ padding:16px; display:flex; flex-direction:column; gap:10px; flex:1; }
+.card__title{ font-size:16px; font-weight:400; color:var(--ink); letter-spacing:.3px; margin:0; line-height:1.15; text-transform:uppercase; }
+.card__title strong{ font-weight:800; }
+.card__version{ font-size:13px; color:var(--ink-soft); margin:-4px 0 0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.card__meta{ font-size:12.5px; color:var(--ink-soft); border-top:1px solid var(--card-line2); border-bottom:1px solid var(--card-line2); padding:9px 0; }
+.card__meta span+span::before{ content:"|"; margin:0 7px; color:#c3ccd4; }
+
+.price{ margin-top:auto; }
+.price__label{ display:block; font-size:11px; color:var(--ink-soft); margin-bottom:1px; }
+.price__old{ font-size:13px; color:#9aa7b2; text-decoration:line-through; margin-right:6px; }
+.price__now{ font-size:26px; font-weight:800; color:var(--accent); line-height:1; display:block; margin-top:2px; }
+
+.cta{ width:100%; border:0; background:var(--cta); color:#fff; font-size:15px; font-weight:700; padding:13px 16px; border-radius:var(--r-sm); margin-top:12px; transition:background .18s ease; }
+.cta:hover{ background:var(--cta-hover); }
+
+/* ---- back / form ---- */
+.back{ padding:16px; display:flex; flex-direction:column; height:100%; }
+.back__head{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+.back__title{ font-size:15px; font-weight:800; color:var(--ink); margin:0; }
+.back__car{ font-size:11.5px; color:var(--ink-soft); text-align:right; }
+.back__sub{ font-size:12px; color:var(--ink-soft); margin:4px 0 12px; }
+.field-row{ display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+.field{ display:flex; flex-direction:column; gap:4px; margin-bottom:9px; }
+.field label{ font-size:11px; color:var(--ink-soft); font-weight:600; }
+.field input{ width:100%; border:1px solid var(--card-line); background:#fbfdff; color:var(--ink); border-radius:10px; padding:9px 11px; font-size:13.5px; outline:none; transition:border-color .15s,box-shadow .15s; }
+.field input:focus{ border-color:var(--accent-2); box-shadow:0 0 0 3px rgba(66,183,223,.15); }
+.field input.invalid{ border-color:var(--cta); box-shadow:0 0 0 3px rgba(236,91,69,.13); }
+.consent{ display:flex; gap:8px; align-items:flex-start; margin:2px 0 12px; }
+.consent input{ margin-top:2px; width:15px; height:15px; accent-color:var(--accent-2); flex:0 0 auto; }
+.consent label{ font-size:11px; color:var(--ink-soft); line-height:1.4; }
+.consent.invalid label{ color:var(--cta); }
+.consent a{ color:var(--accent); text-decoration:underline; }
+.back__actions{ margin-top:auto; display:flex; gap:9px; }
+.btn-submit{ flex:1; border:0; background:var(--cta); color:#fff; font-size:14px; font-weight:700; padding:12px; border-radius:var(--r-sm); transition:background .18s ease; }
+.btn-submit:hover{ background:var(--cta-hover); }
+.btn-submit:disabled{ opacity:.6; cursor:not-allowed; }
+.btn-back{ border:1px solid var(--card-line); background:#fff; color:var(--ink-soft); font-size:13px; font-weight:600; padding:12px 14px; border-radius:var(--r-sm); transition:background .15s; }
+.btn-back:hover{ background:#f2f6fa; }
+.back__result{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; padding:10px; }
+.back__result .ico{ width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:28px; color:#fff; }
+.back__result.ok .ico{ background:#2ecc71; }
+.back__result.err .ico{ background:var(--cta); }
+.back__result h4{ margin:0; font-size:16px; color:var(--ink); }
+.back__result p{ margin:0; font-size:13px; color:var(--ink-soft); line-height:1.45; }
+
+/* ---- skeleton / stati ---- */
+.skeleton .flip__face{ background:#f3f6f9; }
+.sk-media{ aspect-ratio:16/10; background:linear-gradient(90deg,#eef2f6 25%,#e2e9f0 37%,#eef2f6 63%); background-size:400% 100%; animation:sh 1.3s infinite; }
+.sk-line{ height:12px; border-radius:6px; margin:12px 16px; background:linear-gradient(90deg,#eef2f6 25%,#e2e9f0 37%,#eef2f6 63%); background-size:400% 100%; animation:sh 1.3s infinite; }
+.sk-line.w60{ width:60%; } .sk-line.w40{ width:40%; }
+@keyframes sh{ 0%{background-position:100% 0} 100%{background-position:0 0} }
+.state{ grid-column:1/-1; text-align:center; color:#c7d6ea; padding:60px 20px; font-size:15px; }
+.state button{ margin-top:14px; border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.06); color:#eaf0ff; padding:10px 18px; border-radius:12px; font-size:14px; }
+.state button:hover{ background:rgba(255,255,255,.12); }
+
+@media (prefers-reduced-motion:reduce){
+  .flip__inner,.flip__face,.cta,.btn-submit,.gallery__track{ transition:none; scroll-behavior:auto; }
+}
+</style>
+</head>
+<body>
+  <div class="grid" id="grid" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+  var CFG = window.WIDGET_CONFIG;
+  var grid = document.getElementById("grid");
+  var K = encodeURIComponent(CFG.API_KEY);
+
+  function num(n){ return (n==null||isNaN(n)) ? "" : Number(n).toLocaleString("it-IT"); }
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); }
+  function isEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+  function isPhone(v){ return /^[0-9]{6,}$/.test(v.replace(/[^0-9]/g,"")); }
+  function postHeight(){ try{ parent.postMessage({type:"autoteam:height",height:document.body.scrollHeight},"*"); }catch(e){} }
+  window.addEventListener("resize", postHeight);
+
+  /* ---------- fetch lista (dati card + ordine + esistenza) ---------- */
+  function fetchCars(){
+    var url = CFG.API_BASE + "/cars?serialNumbers=" + encodeURIComponent(CFG.SERIALS.join(","))
+            + "&size=" + CFG.SERIALS.length + "&key=" + K;
+    return fetch(url,{headers:{Accept:"application/json"}})
+      .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+      .then(function(res){
+        var list=(res&&res.data)?res.data:[];
+        var bySn={}; list.forEach(function(c){ bySn[c.serialNumber]=c; });
+        return CFG.SERIALS.map(function(sn){ return bySn[sn]; }).filter(Boolean);
+      });
+  }
+
+  /* ---------- badge / warranty / meta ---------- */
+  function badges(car){
+    var out="";
+    if(car.promo && car.promo.name) out+='<span class="badge badge--offer">Offerta clienti Top</span>';
+    if((car.tags||[]).indexOf("in_stock")>-1) out+='<span class="badge badge--stock">Usato garantito</span>';
+    return out;
+  }
+  function warranty(car){
+    var w=(car.warranty||"").trim(); if(!w) return "";
+    var m=w.match(/(\d+)\s*ann/i);
+    return '<div class="warranty" title="'+esc(w)+'">'+(m?(m[1]+" anni<br>garanzia"):"garanzia")+'</div>';
+  }
+  function metaLine(car){
+    var t=car.tech||{}, v=car.venue||{}, parts=[];
+    if(car.computedVehicleYear) parts.push(esc(car.computedVehicleYear));
+    if(car.mileageKm!=null)     parts.push(num(car.mileageKm)+" km");
+    if(t.fuelType)              parts.push(esc(t.fuelType));
+    if(t.gearType)              parts.push(esc(t.gearType));
+    if(v.venueTown)             parts.push(esc(v.venueTown));   // citta'
+    return parts.map(function(p){return "<span>"+p+"</span>";}).join("");
+  }
+
+  /* ---------- FRONT ---------- */
+  function frontFace(car){
+    var first=(car.images&&car.images[0])?(car.images[0].imageUrl||car.images[0].thumbnailUrl):"";
+    var slide0 = first
+      ? '<div class="gallery__slide"><img src="'+esc(first)+'" alt="'+esc(car.brand+" "+car.model)+'" loading="lazy"></div>'
+      : '<div class="gallery__slide"></div>';
+
+    var market = car.marketPrice;
+    var priceOld = (market && market>car.displayPrice)
+      ? '<span class="price__label">Prezzo medio di mercato</span><span class="price__old">&euro; '+num(market)+'</span>'
+      : "";
+    var version = esc(car.label || car.version || "");
+
+    return ''+
+      '<div class="gallery" data-gallery="'+esc(car.serialNumber)+'">'+
+        '<div class="card__badges">'+badges(car)+'</div>'+
+        '<div class="gallery__track">'+slide0+'</div>'+
+        warranty(car)+
+      '</div>'+
+      '<div class="card__body">'+
+        '<h3 class="card__title">'+esc(car.brand)+' <strong>'+esc(car.model)+'</strong></h3>'+
+        (version?'<p class="card__version" title="'+version+'">'+version+'</p>':'')+
+        '<div class="card__meta">'+metaLine(car)+'</div>'+
+        '<div class="price">'+priceOld+
+          '<span class="price__now">&euro; '+num(car.displayPrice||car.price)+'</span>'+
+        '</div>'+
+        '<button class="cta" type="button" data-flip="1">Richiedi info</button>'+
+      '</div>';
+  }
+
+  /* ---------- BACK ---------- */
+  function backFace(car){
+    return ''+
+      '<form class="back" novalidate>'+
+        '<div class="back__head">'+
+          '<h4 class="back__title">Richiedi informazioni</h4>'+
+          '<span class="back__car">'+esc(car.brand+" "+car.model)+'</span>'+
+        '</div>'+
+        '<p class="back__sub">Ti ricontattiamo noi, senza impegno.</p>'+
+        '<div class="field-row">'+
+          '<div class="field"><label>Nome</label><input name="firstname" autocomplete="given-name" required></div>'+
+          '<div class="field"><label>Cognome</label><input name="lastname" autocomplete="family-name" required></div>'+
+        '</div>'+
+        '<div class="field"><label>Email</label><input name="email" type="email" autocomplete="email" required></div>'+
+        '<div class="field"><label>Telefono</label><input name="phone" type="tel" autocomplete="tel" required></div>'+
+        '<div class="consent">'+
+          '<input type="checkbox" name="privacy" id="pv-'+car.serialNumber+'">'+
+          '<label for="pv-'+car.serialNumber+'">Ho letto e accetto l\'<a href="'+esc(CFG.PRIVACY_URL)+'" target="_blank" rel="noopener">informativa privacy</a>.</label>'+
+        '</div>'+
+        '<div class="back__actions">'+
+          '<button class="btn-back" type="button" data-flip="0">Indietro</button>'+
+          '<button class="btn-submit" type="submit">Invia richiesta</button>'+
+        '</div>'+
+      '</form>';
+  }
+
+  /* ---------- render ---------- */
+  function render(cars){
+    if(!cars.length){ grid.innerHTML='<div class="state">Nessuna delle auto richieste &egrave; al momento disponibile.</div>'; postHeight(); return; }
+    grid.innerHTML="";
+    cars.forEach(function(car){
+      var wrap=document.createElement("div");
+      wrap.className="flip"; wrap.dataset.sn=car.serialNumber;
+      wrap.innerHTML='<div class="flip__inner">'+
+        '<div class="flip__face flip__face--front">'+frontFace(car)+'</div>'+
+        '<div class="flip__face flip__face--back">'+backFace(car)+'</div>'+
+      '</div>';
+      grid.appendChild(wrap);
+      bindCard(wrap,car);
+      loadGallery(wrap,car);       // carica la gallery completa dal dettaglio
+    });
+    postHeight();
+  }
+
+  /* ---------- gallery (carica tutte le foto dal dettaglio) ---------- */
+  function loadGallery(wrap, car){
+    fetch(CFG.API_BASE+"/cars/"+encodeURIComponent(car.serialNumber)+"?key="+K,{headers:{Accept:"application/json"}})
+      .then(function(r){ return r.ok?r.json():null; })
+      .then(function(res){
+        var c = Array.isArray(res)?res[0]:res;
+        var imgs = (c&&c.images&&c.images.length)?c.images:(car.images||[]);
+        if(imgs.length>1) buildGallery(wrap, car, imgs);
+      })
+      .catch(function(){});
+  }
+
+  function buildGallery(wrap, car, imgs){
+    var gal=wrap.querySelector(".gallery"); if(!gal) return;
+    var track=gal.querySelector(".gallery__track");
+    track.innerHTML = imgs.map(function(im){
+      var u=im.imageUrl||im.thumbnailUrl||""; if(!u) return "";
+      return '<div class="gallery__slide"><img src="'+esc(u)+'" alt="'+esc(car.brand+" "+car.model)+'" loading="lazy"></div>';
+    }).join("");
+
+    // frecce
+    var prev=document.createElement("button"); prev.className="gal-nav gal-nav--prev"; prev.type="button"; prev.innerHTML="&#8249;"; prev.setAttribute("aria-label","Foto precedente");
+    var next=document.createElement("button"); next.className="gal-nav gal-nav--next"; next.type="button"; next.innerHTML="&#8250;"; next.setAttribute("aria-label","Foto successiva");
+    gal.appendChild(prev); gal.appendChild(next);
+    // contatore + dots
+    var count=document.createElement("div"); count.className="gal-count"; count.textContent="1/"+imgs.length; gal.appendChild(count);
+    var dots=document.createElement("div"); dots.className="gal-dots";
+    imgs.forEach(function(_,i){ var d=document.createElement("span"); d.className="gal-dot"+(i===0?" is-active":""); dots.appendChild(d); });
+    gal.appendChild(dots);
+
+    function idx(){ return Math.round(track.scrollLeft/track.clientWidth); }
+    function go(i){ i=Math.max(0,Math.min(imgs.length-1,i)); track.scrollTo({left:i*track.clientWidth,behavior:"smooth"}); }
+    function sync(){
+      var i=idx();
+      count.textContent=(i+1)+"/"+imgs.length;
+      dots.querySelectorAll(".gal-dot").forEach(function(d,j){ d.classList.toggle("is-active",j===i); });
+      prev.disabled=(i<=0); next.disabled=(i>=imgs.length-1);
+    }
+    prev.addEventListener("click",function(e){ e.stopPropagation(); go(idx()-1); });
+    next.addEventListener("click",function(e){ e.stopPropagation(); go(idx()+1); });
+    track.addEventListener("scroll",function(){ window.requestAnimationFrame(sync); },{passive:true});
+    sync();
+  }
+
+  /* ---------- interazione ---------- */
+  function bindCard(wrap, car){
+    wrap.addEventListener("click", function(e){
+      if(e.target.closest(".gallery")) return;          // i click sulla gallery non girano la card
+      var t=e.target.closest("[data-flip]"); if(!t) return;
+      if(t.getAttribute("data-flip")==="1") wrap.classList.add("is-flipped");
+      else wrap.classList.remove("is-flipped");
+      setTimeout(postHeight,560);
+    });
+    wrap.querySelector("form").addEventListener("submit", function(e){ e.preventDefault(); submitLead(this,car,wrap); });
+  }
+
+  /* ---------- invio lead ---------- */
+  function submitLead(form, car){
+    var f={ firstname:form.firstname.value.trim(), lastname:form.lastname.value.trim(),
+            email:form.email.value.trim(), phone:form.phone.value.trim(), privacy:form.privacy.checked };
+    var ok=true;
+    [["firstname",!!f.firstname],["lastname",!!f.lastname],["email",isEmail(f.email)],["phone",isPhone(f.phone)]]
+      .forEach(function(p){ form[p[0]].classList.toggle("invalid",!p[1]); if(!p[1]) ok=false; });
+    var consent=form.querySelector(".consent"); consent.classList.toggle("invalid",!f.privacy); if(!f.privacy) ok=false;
+    if(!ok) return;
+
+    var btn=form.querySelector(".btn-submit"); btn.disabled=true; btn.textContent="Invio in corso...";
+
+    var body={
+      category: CFG.LEAD_CATEGORY,           // "auto.info"
+      data:{
+        firstname:f.firstname, lastname:f.lastname, email:f.email, phone:f.phone,
+        province:"", city:"", note:"",
+        privacy:true,
+        dealerId: car.dealerId||"",
+        serialNumber: car.serialNumber,
+        url: CFG.DETAIL_PATH + (car.slug||""),   // relativo!
+        gclid:"", fbclid:"",
+        privacy_promo:false, privacy_survey:false, privacy_communication:false
+      }
+    };
+    fetch(CFG.API_BASE+"/contact/request?key="+K,{
+      method:"POST", headers:{"Content-Type":"application/json",Accept:"application/json"},
+      body:JSON.stringify(body)
+    })
+    .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.text(); })
+    .then(function(){ showResult(form,true); })
+    .catch(function(){ btn.disabled=false; btn.textContent="Invia richiesta"; showResult(form,false); });
+  }
+
+  function showResult(form, ok){
+    form.innerHTML = ok
+      ? '<div class="back__result ok"><div class="ico">&#10003;</div><h4>Richiesta inviata</h4><p>Grazie! Un nostro consulente ti contatter&agrave; a breve.</p></div>'
+      : '<div class="back__result err"><div class="ico">!</div><h4>Invio non riuscito</h4><p>Riprova tra poco oppure chiamaci. La richiesta non &egrave; stata registrata.</p><button class="btn-back" type="button" data-flip="0" style="margin-top:6px">Chiudi</button></div>';
+    setTimeout(postHeight,50);
+  }
+
+  function showError(){
+    grid.innerHTML='<div class="state">Impossibile caricare le auto in questo momento.<br><button id="retry">Riprova</button></div>';
+    document.getElementById("retry").addEventListener("click", boot); postHeight();
+  }
+
+  function skeletons(n){
+    grid.innerHTML="";
+    for(var i=0;i<n;i++){ var d=document.createElement("div"); d.className="flip skeleton";
+      d.innerHTML='<div class="flip__inner"><div class="flip__face flip__face--front"><div class="sk-media"></div><div class="sk-line w60"></div><div class="sk-line w40"></div><div class="sk-line"></div><div class="sk-line w40"></div></div></div>';
+      grid.appendChild(d); }
+  }
+  function boot(){ skeletons(Math.min(6,CFG.SERIALS.length)); postHeight(); fetchCars().then(render).catch(showError); }
+  boot();
+})();
+</script>
+</body>
+</html>
