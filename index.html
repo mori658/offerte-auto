@@ -97,9 +97,11 @@ a{ color:inherit; text-decoration:none; }
 .card__meta span+span::before{ content:"|"; margin:0 7px; color:#c3ccd4; }
 
 .price{ margin-top:auto; }
-.price__label{ display:block; font-size:11px; color:var(--ink-soft); margin-bottom:1px; }
-.price__old{ font-size:13px; color:#9aa7b2; text-decoration:line-through; margin-right:6px; }
+.price__market{ display:flex; align-items:baseline; gap:7px; flex-wrap:wrap; margin-bottom:2px; }
+.price__label{ font-size:11px; color:var(--ink-soft); }
+.price__old{ font-size:13px; color:#9aa7b2; text-decoration:line-through; }
 .price__now{ font-size:26px; font-weight:800; color:var(--accent); line-height:1; display:block; margin-top:2px; }
+.card__tags{ display:flex; gap:6px; flex-wrap:wrap; }
 
 .cta{ width:100%; border:0; background:var(--cta); color:#fff; font-size:15px; font-weight:700; padding:13px 16px; border-radius:var(--r-sm); margin-top:12px; transition:background .18s ease; }
 .cta:hover{ background:var(--cta-hover); }
@@ -180,6 +182,12 @@ a{ color:inherit; text-decoration:none; }
   var CFG = window.WIDGET_CONFIG;
   var grid = document.getElementById("grid");
   var K = encodeURIComponent(CFG.API_KEY);
+
+  // Handshake con la pagina ospite: sappiamo se lo snippet e' presente
+  var parentReady=false;
+  window.addEventListener("message",function(e){ if(e.data&&e.data.type==="autoteam:parentReady") parentReady=true; });
+  function sayHello(){ try{ parent.postMessage({type:"autoteam:hello"},"*"); }catch(e){} }
+  sayHello(); setTimeout(sayHello,400); setTimeout(sayHello,1200);
 
   function num(n){ return (n==null||isNaN(n)) ? "" : Number(n).toLocaleString("it-IT"); }
   function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){
@@ -265,6 +273,13 @@ a{ color:inherit; text-decoration:none; }
   var lb=document.getElementById("lb");
   var lbTrack=lb.querySelector(".slider__track");
   function openLightbox(imgs, start){
+    if(!parentReady){
+      // Nessuno snippet nella pagina ospite: un overlay a tutto schermo dentro
+      // l'iframe non e' possibile su mobile -> apriamo la foto in una nuova scheda.
+      var u=imgs[start]||imgs[0];
+      if(u){ var w=window.open(u,"_blank","noopener"); if(!w){ try{ top.location.href=u; }catch(e){ location.href=u; } } }
+      return;
+    }
     lbTrack.innerHTML = imgs.map(function(u){
       return '<div class="slider__slide"><img src="'+esc(u)+'" alt=""></div>';
     }).join("");
@@ -324,20 +339,21 @@ a{ color:inherit; text-decoration:none; }
       ? '<div class="slider__slide"><img src="'+esc(first)+'" alt="'+esc(car.brand+" "+car.model)+'" loading="lazy"></div>'
       : '<div class="slider__slide"></div>';
     var market=car.marketPrice;
-    var priceOld=(market&&market>car.displayPrice)
-      ? '<span class="price__label">Prezzo medio di mercato</span><span class="price__old">&euro; '+num(market)+'</span>' : "";
+    var priceMarket=(market&&market>car.displayPrice)
+      ? '<div class="price__market"><span class="price__label">Prezzo medio di mercato</span><span class="price__old">&euro; '+num(market)+'</span></div>' : "";
     var version=esc(car.label||car.version||"");
+    var tags=badges(car);
     return ''+
       '<div class="gallery" data-gallery="'+esc(car.serialNumber)+'">'+
-        '<div class="card__badges">'+badges(car)+'</div>'+
         '<div class="slider"><div class="slider__track">'+slide0+'</div></div>'+
         warranty(car)+
       '</div>'+
       '<div class="card__body">'+
         '<h3 class="card__title">'+esc(car.brand)+' <strong>'+esc(car.model)+'</strong></h3>'+
         (version?'<p class="card__version" title="'+version+'">'+version+'</p>':'')+
+        (tags?'<div class="card__tags">'+tags+'</div>':'')+
         '<div class="card__meta">'+metaLine(car)+'</div>'+
-        '<div class="price">'+priceOld+'<span class="price__now">&euro; '+num(car.displayPrice||car.price)+'</span></div>'+
+        '<div class="price">'+priceMarket+'<span class="price__now">&euro; '+num(car.displayPrice||car.price)+'</span></div>'+
         '<button class="cta" type="button" data-flip="1">Richiedi info</button>'+
       '</div>';
   }
