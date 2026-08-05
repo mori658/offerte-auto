@@ -101,7 +101,8 @@ a{ color:inherit; text-decoration:none; }
 .price__label{ font-size:11px; color:var(--ink-soft); }
 .price__old{ font-size:13px; color:#9aa7b2; text-decoration:line-through; }
 .price__now{ font-size:26px; font-weight:800; color:var(--accent); line-height:1; display:block; margin-top:2px; }
-.card__tags{ display:flex; gap:6px; flex-wrap:wrap; }
+.card__tags{ display:flex; gap:6px; flex-wrap:nowrap; }
+.card__tags .badge{ font-size:10px; padding:5px 8px; letter-spacing:.3px; }
 
 .cta{ width:100%; border:0; background:var(--cta); color:#fff; font-size:15px; font-weight:700; padding:13px 16px; border-radius:var(--r-sm); margin-top:12px; transition:background .18s ease; }
 .cta:hover{ background:var(--cta-hover); }
@@ -272,29 +273,46 @@ a{ color:inherit; text-decoration:none; }
   /* ---------- lightbox ---------- */
   var lb=document.getElementById("lb");
   var lbTrack=lb.querySelector(".slider__track");
+  var usedFullscreen=false;
   function openLightbox(imgs, start){
-    if(!parentReady){
-      // Nessuno snippet nella pagina ospite: un overlay a tutto schermo dentro
-      // l'iframe non e' possibile su mobile -> apriamo la foto in una nuova scheda.
-      var u=imgs[start]||imgs[0];
-      if(u){ var w=window.open(u,"_blank","noopener"); if(!w){ try{ top.location.href=u; }catch(e){ location.href=u; } } }
-      return;
-    }
+    start=start||0;
     lbTrack.innerHTML = imgs.map(function(u){
       return '<div class="slider__slide"><img src="'+esc(u)+'" alt=""></div>';
     }).join("");
-    // reset eventuali controlli precedenti
     [].forEach.call(lb.querySelectorAll(".gal-nav,.gal-count,.gal-dots"),function(n){ n.remove(); });
-    lb.classList.add("is-open"); lb.setAttribute("aria-hidden","false");
-    initSlider(lb.querySelector(".slider"), { arrows:false, counter:true, dots:true, start:start||0 });
-    // chiede alla pagina ospite di espandere l'iframe a tutto schermo
-    try{ parent.postMessage({type:"autoteam:lightbox",open:true},"*"); }catch(e){}
+    usedFullscreen=false;
+
+    // 1) pagina ospite con snippet -> espande l'iframe (funziona anche su iPhone)
+    if(parentReady){
+      lb.classList.add("is-open"); lb.setAttribute("aria-hidden","false");
+      initSlider(lb.querySelector(".slider"), { arrows:false, counter:true, dots:true, start:start });
+      try{ parent.postMessage({type:"autoteam:lightbox",open:true},"*"); }catch(e){}
+      return;
+    }
+    // 2) Fullscreen API nativa (desktop, Android, iPad) -> popup in-page a tutto schermo
+    var rq = lb.requestFullscreen||lb.webkitRequestFullscreen||lb.msRequestFullscreen;
+    if(rq){
+      lb.classList.add("is-open"); lb.setAttribute("aria-hidden","false");
+      initSlider(lb.querySelector(".slider"), { arrows:false, counter:true, dots:true, start:start });
+      try{ var pr=rq.call(lb); usedFullscreen=true; if(pr&&pr.catch) pr.catch(function(){}); }catch(e){}
+      return;
+    }
+    // 3) ultima spiaggia (iPhone senza snippet): apri la foto in una nuova scheda
+    var u=imgs[start]||imgs[0]; lbTrack.innerHTML="";
+    if(u){ var w=window.open(u,"_blank","noopener"); if(!w){ try{ top.location.href=u; }catch(e){ location.href=u; } } }
   }
   function closeLightbox(){
     if(!lb.classList.contains("is-open")) return;
     lb.classList.remove("is-open"); lb.setAttribute("aria-hidden","true"); lbTrack.innerHTML="";
-    try{ parent.postMessage({type:"autoteam:lightbox",open:false},"*"); }catch(e){}
+    if(parentReady){ try{ parent.postMessage({type:"autoteam:lightbox",open:false},"*"); }catch(e){} }
+    if(usedFullscreen){
+      var ex=document.exitFullscreen||document.webkitExitFullscreen||document.msExitFullscreen;
+      if(ex && (document.fullscreenElement||document.webkitFullscreenElement)){ try{ ex.call(document); }catch(e){} }
+      usedFullscreen=false;
+    }
   }
+  document.addEventListener("fullscreenchange",function(){ if(!document.fullscreenElement && usedFullscreen) closeLightbox(); });
+  document.addEventListener("webkitfullscreenchange",function(){ if(!document.webkitFullscreenElement && usedFullscreen) closeLightbox(); });
   lb.querySelector(".lb__close").addEventListener("click",closeLightbox);
   lb.addEventListener("click",function(e){ if(e.target===lb) closeLightbox(); });
   document.addEventListener("keydown",function(e){ if(e.key==="Escape") closeLightbox(); });
