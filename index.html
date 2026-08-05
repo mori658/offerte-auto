@@ -12,10 +12,8 @@
 window.WIDGET_CONFIG = {
   API_BASE:    "https://api.intergeanordest.it",
   API_KEY:     "YNcQtkvzHJUVTKeVk2doF0pWt8prUllDkeZE8pw7LomgIUw6xiTINjEMXe9JdSsp",
-  // Path relativo per il campo "url" del lead (il backend prefissa il dominio da solo)
   DETAIL_PATH: "/auto/",
   PRIVACY_URL: "https://intergeanordest.it/landing/privacy-informativa-clienti-ferrarimotors",
-  // Categoria richiesta dal backend per il form informazioni
   LEAD_CATEGORY: "auto.info",
   SERIALS: [
     "11537834","11677203","11626980","11640448","11625772","11633964",
@@ -41,12 +39,12 @@ window.WIDGET_CONFIG = {
 html,body{ margin:0; }
 body{
   font-family:var(--sans); color:var(--ink); background:var(--bg);
-  -webkit-font-smoothing:antialiased; padding:20px clamp(14px,3vw,40px);
+  -webkit-font-smoothing:antialiased; padding:20px clamp(12px,3vw,40px);
 }
 button{ font-family:inherit; cursor:pointer; }
 a{ color:inherit; text-decoration:none; }
 
-.grid{ display:grid; gap:22px; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); max-width:1200px; margin:0 auto; }
+.grid{ display:grid; gap:22px; grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr)); max-width:1200px; margin:0 auto; }
 
 .flip{ perspective:1600px; }
 .flip__inner{ display:grid; transform-style:preserve-3d; transition:transform .55s cubic-bezier(.2,.7,.2,1); min-height:440px; }
@@ -60,35 +58,35 @@ a{ color:inherit; text-decoration:none; }
 .flip__face--back{ transform:rotateY(180deg); }
 .flip:not(.is-flipped) .flip__face--front:hover{ box-shadow:var(--shadow-hover); transform:translateY(-2px); }
 
-/* ---- gallery ---- */
+/* ---- slider (card + lightbox condividono queste classi) ---- */
+.slider{ position:relative; width:100%; height:100%; overflow:hidden; }
+.slider__track{ display:flex; height:100%; will-change:transform; touch-action:pan-y; }
+.slider__slide{ flex:0 0 100%; height:100%; }
+.slider__slide img{ width:100%; height:100%; object-fit:cover; display:block; -webkit-user-drag:none; user-select:none; pointer-events:none; }
+
 .gallery{ position:relative; aspect-ratio:16/10; background:radial-gradient(120% 90% at 50% 20%,#f4f8fb 0%,#e7eef4 60%,#dbe6ee 100%); overflow:hidden; }
-.gallery__track{
-  display:flex; height:100%; overflow-x:auto; scroll-snap-type:x mandatory;
-  scroll-behavior:smooth; scrollbar-width:none; -ms-overflow-style:none;
-}
-.gallery__track::-webkit-scrollbar{ display:none; }
-.gallery__slide{ flex:0 0 100%; scroll-snap-align:center; height:100%; }
-.gallery__slide img{ width:100%; height:100%; object-fit:cover; display:block; }
+.gallery .slider__slide{ cursor:zoom-in; }
+
 .gal-nav{
   position:absolute; top:50%; transform:translateY(-50%);
-  width:32px; height:32px; border:0; border-radius:50%;
-  background:rgba(255,255,255,.9); color:#26333f; font-size:18px; line-height:1;
+  width:36px; height:36px; border:0; border-radius:50%;
+  background:var(--bg); color:#fff; font-size:20px; font-weight:700; line-height:1;
   display:flex; align-items:center; justify-content:center;
-  box-shadow:0 2px 8px rgba(0,0,0,.2); opacity:0; transition:opacity .18s; z-index:3;
+  box-shadow:0 3px 10px rgba(0,0,0,.35); z-index:4; opacity:.92; transition:opacity .15s, background .15s;
 }
-.gallery:hover .gal-nav{ opacity:1; }
+.gal-nav:hover{ opacity:1; background:#012a5c; }
 .gal-nav--prev{ left:8px; } .gal-nav--next{ right:8px; }
-.gal-nav[disabled]{ opacity:0!important; pointer-events:none; }
-.gal-dots{ position:absolute; bottom:8px; left:0; right:0; display:flex; gap:5px; justify-content:center; z-index:3; }
-.gal-dot{ width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.55); box-shadow:0 0 2px rgba(0,0,0,.4); transition:background .18s,width .18s; }
+.gal-nav[disabled]{ opacity:0; pointer-events:none; }
+.gal-dots{ position:absolute; bottom:8px; left:0; right:0; display:flex; gap:5px; justify-content:center; z-index:4; pointer-events:none; }
+.gal-dot{ width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.6); box-shadow:0 0 2px rgba(0,0,0,.5); transition:background .18s,width .18s; }
 .gal-dot.is-active{ background:#fff; width:16px; border-radius:3px; }
-.gal-count{ position:absolute; top:10px; right:10px; z-index:3; background:rgba(0,0,0,.55); color:#fff; font-size:11px; font-weight:600; padding:3px 8px; border-radius:20px; }
+.gal-count{ position:absolute; top:10px; right:10px; z-index:4; background:rgba(0,23,51,.75); color:#fff; font-size:11px; font-weight:600; padding:3px 8px; border-radius:20px; pointer-events:none; }
 
-.card__badges{ position:absolute; top:12px; left:12px; display:flex; gap:6px; flex-wrap:wrap; max-width:calc(100% - 24px); z-index:3; }
+.card__badges{ position:absolute; top:12px; left:12px; display:flex; gap:6px; flex-wrap:wrap; max-width:calc(100% - 24px); z-index:4; }
 .badge{ font-size:10.5px; font-weight:700; letter-spacing:.4px; text-transform:uppercase; color:#fff; padding:5px 9px; border-radius:6px; line-height:1; white-space:nowrap; box-shadow:0 2px 6px rgba(0,0,0,.18); }
 .badge--offer{ background:var(--badge-blue); }
 .badge--stock{ background:var(--accent-2); }
-.warranty{ position:absolute; right:14px; bottom:26px; width:70px; height:70px; border-radius:50%; background:var(--accent-2); color:#fff; display:flex; align-items:center; justify-content:center; text-align:center; font-size:9.5px; font-weight:800; line-height:1.15; padding:8px; box-shadow:0 6px 16px rgba(0,0,0,.25); z-index:3; }
+.warranty{ position:absolute; right:14px; bottom:26px; width:70px; height:70px; border-radius:50%; background:var(--accent-2); color:#fff; display:flex; align-items:center; justify-content:center; text-align:center; font-size:9.5px; font-weight:800; line-height:1.15; padding:8px; box-shadow:0 6px 16px rgba(0,0,0,.25); z-index:4; pointer-events:none; }
 
 /* ---- body ---- */
 .card__body{ padding:16px; display:flex; flex-direction:column; gap:10px; flex:1; }
@@ -115,11 +113,11 @@ a{ color:inherit; text-decoration:none; }
 .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:9px; }
 .field{ display:flex; flex-direction:column; gap:4px; margin-bottom:9px; }
 .field label{ font-size:11px; color:var(--ink-soft); font-weight:600; }
-.field input{ width:100%; border:1px solid var(--card-line); background:#fbfdff; color:var(--ink); border-radius:10px; padding:9px 11px; font-size:13.5px; outline:none; transition:border-color .15s,box-shadow .15s; }
+.field input{ width:100%; border:1px solid var(--card-line); background:#fbfdff; color:var(--ink); border-radius:10px; padding:9px 11px; font-size:16px; outline:none; transition:border-color .15s,box-shadow .15s; }
 .field input:focus{ border-color:var(--accent-2); box-shadow:0 0 0 3px rgba(66,183,223,.15); }
 .field input.invalid{ border-color:var(--cta); box-shadow:0 0 0 3px rgba(236,91,69,.13); }
 .consent{ display:flex; gap:8px; align-items:flex-start; margin:2px 0 12px; }
-.consent input{ margin-top:2px; width:15px; height:15px; accent-color:var(--accent-2); flex:0 0 auto; }
+.consent input{ margin-top:2px; width:16px; height:16px; accent-color:var(--accent-2); flex:0 0 auto; }
 .consent label{ font-size:11px; color:var(--ink-soft); line-height:1.4; }
 .consent.invalid label{ color:var(--cta); }
 .consent a{ color:var(--accent); text-decoration:underline; }
@@ -136,6 +134,18 @@ a{ color:inherit; text-decoration:none; }
 .back__result h4{ margin:0; font-size:16px; color:var(--ink); }
 .back__result p{ margin:0; font-size:13px; color:var(--ink-soft); line-height:1.45; }
 
+/* ---- lightbox ---- */
+.lb{ position:fixed; inset:0; background:rgba(0,10,25,.94); z-index:99999; display:none; }
+.lb.is-open{ display:block; }
+.lb .slider{ position:absolute; inset:0; }
+.lb .slider__slide{ display:flex; align-items:center; justify-content:center; }
+.lb .slider__slide img{ width:100%; height:100%; object-fit:contain; pointer-events:none; }
+.lb .gal-nav{ width:48px; height:48px; font-size:26px; opacity:.95; }
+.lb .gal-nav--prev{ left:14px; } .lb .gal-nav--next{ right:14px; }
+.lb__close{ position:absolute; top:14px; right:14px; z-index:5; width:44px; height:44px; border:0; border-radius:50%; background:rgba(0,23,51,.85); color:#fff; font-size:24px; line-height:1; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(0,0,0,.4); }
+.lb__close:hover{ background:#012a5c; }
+.lb .gal-count{ top:20px; left:20px; right:auto; font-size:13px; padding:5px 12px; }
+
 /* ---- skeleton / stati ---- */
 .skeleton .flip__face{ background:#f3f6f9; }
 .sk-media{ aspect-ratio:16/10; background:linear-gradient(90deg,#eef2f6 25%,#e2e9f0 37%,#eef2f6 63%); background-size:400% 100%; animation:sh 1.3s infinite; }
@@ -146,13 +156,23 @@ a{ color:inherit; text-decoration:none; }
 .state button{ margin-top:14px; border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.06); color:#eaf0ff; padding:10px 18px; border-radius:12px; font-size:14px; }
 .state button:hover{ background:rgba(255,255,255,.12); }
 
+@media (max-width:480px){
+  body{ padding:12px 10px; }
+  .grid{ gap:14px; }
+}
 @media (prefers-reduced-motion:reduce){
-  .flip__inner,.flip__face,.cta,.btn-submit,.gallery__track{ transition:none; scroll-behavior:auto; }
+  .flip__inner,.flip__face,.cta,.btn-submit{ transition:none; }
 }
 </style>
 </head>
 <body>
   <div class="grid" id="grid" aria-live="polite"></div>
+
+  <!-- lightbox (creata una sola volta) -->
+  <div class="lb" id="lb" aria-hidden="true">
+    <button class="lb__close" type="button" aria-label="Chiudi">&times;</button>
+    <div class="slider"><div class="slider__track"></div></div>
+  </div>
 
 <script>
 (function(){
@@ -169,7 +189,98 @@ a{ color:inherit; text-decoration:none; }
   function postHeight(){ try{ parent.postMessage({type:"autoteam:height",height:document.body.scrollHeight},"*"); }catch(e){} }
   window.addEventListener("resize", postHeight);
 
-  /* ---------- fetch lista (dati card + ordine + esistenza) ---------- */
+  /* =====================================================================
+     SLIDER riutilizzabile: trascinamento touch/mouse + frecce + dots
+     root = elemento .slider ; opts.controls (bool) ; opts.onTap(i)
+     ===================================================================== */
+  function initSlider(root, opts){
+    opts=opts||{};
+    var track=root.querySelector(".slider__track");
+    var n=track.children.length;
+    var i=Math.min(opts.start||0, n-1); if(i<0) i=0;
+    var startX=0, startY=0, dx=0, dragging=false, moved=false, locked=null;
+
+    function render(animate){
+      track.style.transition = animate ? "transform .3s ease" : "none";
+      track.style.transform = "translateX(calc(" + (-i*100) + "% + " + dx + "px))";
+    }
+    // controlli
+    var prev,next,count,dots;
+    if(opts.controls && n>1){
+      prev=el("button","gal-nav gal-nav--prev","&#8249;"); prev.setAttribute("aria-label","Precedente");
+      next=el("button","gal-nav gal-nav--next","&#8250;"); next.setAttribute("aria-label","Successiva");
+      count=el("div","gal-count","1/"+n);
+      dots=el("div","gal-dots","");
+      for(var d=0; d<n; d++){ var s=document.createElement("span"); s.className="gal-dot"+(d===0?" is-active":""); dots.appendChild(s); }
+      root.appendChild(prev); root.appendChild(next); root.appendChild(count); root.appendChild(dots);
+      prev.addEventListener("click",function(e){ e.stopPropagation(); go(i-1); });
+      next.addEventListener("click",function(e){ e.stopPropagation(); go(i+1); });
+    }
+    function el(tag,cls,html){ var e=document.createElement(tag); e.className=cls; if(tag==="button")e.type="button"; e.innerHTML=html; return e; }
+    function ui(){
+      if(count) count.textContent=(i+1)+"/"+n;
+      if(dots) [].forEach.call(dots.children,function(s,j){ s.classList.toggle("is-active",j===i); });
+      if(prev) prev.disabled=(i<=0);
+      if(next) next.disabled=(i>=n-1);
+    }
+    function go(j){ i=Math.max(0,Math.min(n-1,j)); dx=0; render(true); ui(); }
+
+    // drag (Pointer Events: touch + mouse)
+    track.addEventListener("pointerdown",function(e){
+      if(e.target.closest(".gal-nav")) return;
+      dragging=true; moved=false; locked=null; startX=e.clientX; startY=e.clientY; dx=0;
+      try{ track.setPointerCapture(e.pointerId); }catch(_){}
+    });
+    track.addEventListener("pointermove",function(e){
+      if(!dragging) return;
+      var mx=e.clientX-startX, my=e.clientY-startY;
+      if(locked===null && (Math.abs(mx)>6 || Math.abs(my)>6)) locked = Math.abs(mx)>Math.abs(my) ? "x":"y";
+      if(locked==="y") return;            // scroll verticale: lascia scorrere la pagina
+      moved=true;
+      dx=mx;
+      if((i===0&&dx>0)||(i===n-1&&dx<0)) dx*=0.35;   // resistenza ai bordi
+      render(false);
+    });
+    function end(e){
+      if(!dragging) return; dragging=false;
+      var th=root.clientWidth*0.16;
+      if(dx<=-th) i=Math.min(n-1,i+1);
+      else if(dx>=th) i=Math.max(0,i-1);
+      dx=0; render(true); ui();
+      if(!moved && opts.onTap) opts.onTap(i);   // tap = apri lightbox
+    }
+    track.addEventListener("pointerup",end);
+    track.addEventListener("pointercancel",function(){ dragging=false; dx=0; render(true); });
+
+    render(false); ui();
+    return { go:go, index:function(){return i;} };
+  }
+
+  /* ---------- lightbox ---------- */
+  var lb=document.getElementById("lb");
+  var lbTrack=lb.querySelector(".slider__track");
+  function openLightbox(imgs, start){
+    lbTrack.innerHTML = imgs.map(function(u){
+      return '<div class="slider__slide"><img src="'+esc(u)+'" alt=""></div>';
+    }).join("");
+    lb.classList.add("is-open"); lb.setAttribute("aria-hidden","false");
+    // reset eventuali controlli precedenti
+    [].forEach.call(lb.querySelectorAll(".gal-nav,.gal-count,.gal-dots"),function(n){ n.remove(); });
+    initSlider(lb.querySelector(".slider"), { controls:true, start:start||0 });
+    var elFs = lb;
+    var rq = elFs.requestFullscreen||elFs.webkitRequestFullscreen||elFs.mozRequestFullScreen||elFs.msRequestFullscreen;
+    if(rq){ try{ rq.call(elFs); }catch(e){} }
+  }
+  function closeLightbox(){
+    lb.classList.remove("is-open"); lb.setAttribute("aria-hidden","true"); lbTrack.innerHTML="";
+    var ex=document.exitFullscreen||document.webkitExitFullscreen||document.mozCancelFullScreen||document.msExitFullscreen;
+    if(ex && (document.fullscreenElement||document.webkitFullscreenElement)){ try{ ex.call(document); }catch(e){} }
+  }
+  lb.querySelector(".lb__close").addEventListener("click",closeLightbox);
+  lb.addEventListener("click",function(e){ if(e.target===lb) closeLightbox(); });
+  document.addEventListener("keydown",function(e){ if(e.key==="Escape") closeLightbox(); });
+
+  /* ---------- fetch lista ---------- */
   function fetchCars(){
     var url = CFG.API_BASE + "/cars?serialNumbers=" + encodeURIComponent(CFG.SERIALS.join(","))
             + "&size=" + CFG.SERIALS.length + "&key=" + K;
@@ -182,7 +293,6 @@ a{ color:inherit; text-decoration:none; }
       });
   }
 
-  /* ---------- badge / warranty / meta ---------- */
   function badges(car){
     var out="";
     if(car.promo && car.promo.name) out+='<span class="badge badge--offer">Offerta clienti Top</span>';
@@ -200,48 +310,39 @@ a{ color:inherit; text-decoration:none; }
     if(car.mileageKm!=null)     parts.push(num(car.mileageKm)+" km");
     if(t.fuelType)              parts.push(esc(t.fuelType));
     if(t.gearType)              parts.push(esc(t.gearType));
-    if(v.venueTown)             parts.push(esc(v.venueTown));   // citta'
+    if(v.venueTown)             parts.push(esc(v.venueTown));
     return parts.map(function(p){return "<span>"+p+"</span>";}).join("");
   }
 
-  /* ---------- FRONT ---------- */
   function frontFace(car){
     var first=(car.images&&car.images[0])?(car.images[0].imageUrl||car.images[0].thumbnailUrl):"";
     var slide0 = first
-      ? '<div class="gallery__slide"><img src="'+esc(first)+'" alt="'+esc(car.brand+" "+car.model)+'" loading="lazy"></div>'
-      : '<div class="gallery__slide"></div>';
-
-    var market = car.marketPrice;
-    var priceOld = (market && market>car.displayPrice)
-      ? '<span class="price__label">Prezzo medio di mercato</span><span class="price__old">&euro; '+num(market)+'</span>'
-      : "";
-    var version = esc(car.label || car.version || "");
-
+      ? '<div class="slider__slide"><img src="'+esc(first)+'" alt="'+esc(car.brand+" "+car.model)+'" loading="lazy"></div>'
+      : '<div class="slider__slide"></div>';
+    var market=car.marketPrice;
+    var priceOld=(market&&market>car.displayPrice)
+      ? '<span class="price__label">Prezzo medio di mercato</span><span class="price__old">&euro; '+num(market)+'</span>' : "";
+    var version=esc(car.label||car.version||"");
     return ''+
       '<div class="gallery" data-gallery="'+esc(car.serialNumber)+'">'+
         '<div class="card__badges">'+badges(car)+'</div>'+
-        '<div class="gallery__track">'+slide0+'</div>'+
+        '<div class="slider"><div class="slider__track">'+slide0+'</div></div>'+
         warranty(car)+
       '</div>'+
       '<div class="card__body">'+
         '<h3 class="card__title">'+esc(car.brand)+' <strong>'+esc(car.model)+'</strong></h3>'+
         (version?'<p class="card__version" title="'+version+'">'+version+'</p>':'')+
         '<div class="card__meta">'+metaLine(car)+'</div>'+
-        '<div class="price">'+priceOld+
-          '<span class="price__now">&euro; '+num(car.displayPrice||car.price)+'</span>'+
-        '</div>'+
+        '<div class="price">'+priceOld+'<span class="price__now">&euro; '+num(car.displayPrice||car.price)+'</span></div>'+
         '<button class="cta" type="button" data-flip="1">Richiedi info</button>'+
       '</div>';
   }
 
-  /* ---------- BACK ---------- */
   function backFace(car){
     return ''+
       '<form class="back" novalidate>'+
-        '<div class="back__head">'+
-          '<h4 class="back__title">Richiedi informazioni</h4>'+
-          '<span class="back__car">'+esc(car.brand+" "+car.model)+'</span>'+
-        '</div>'+
+        '<div class="back__head"><h4 class="back__title">Richiedi informazioni</h4>'+
+          '<span class="back__car">'+esc(car.brand+" "+car.model)+'</span></div>'+
         '<p class="back__sub">Ti ricontattiamo noi, senza impegno.</p>'+
         '<div class="field-row">'+
           '<div class="field"><label>Nome</label><input name="firstname" autocomplete="given-name" required></div>'+
@@ -249,18 +350,13 @@ a{ color:inherit; text-decoration:none; }
         '</div>'+
         '<div class="field"><label>Email</label><input name="email" type="email" autocomplete="email" required></div>'+
         '<div class="field"><label>Telefono</label><input name="phone" type="tel" autocomplete="tel" required></div>'+
-        '<div class="consent">'+
-          '<input type="checkbox" name="privacy" id="pv-'+car.serialNumber+'">'+
-          '<label for="pv-'+car.serialNumber+'">Ho letto e accetto l\'<a href="'+esc(CFG.PRIVACY_URL)+'" target="_blank" rel="noopener">informativa privacy</a>.</label>'+
-        '</div>'+
-        '<div class="back__actions">'+
-          '<button class="btn-back" type="button" data-flip="0">Indietro</button>'+
-          '<button class="btn-submit" type="submit">Invia richiesta</button>'+
-        '</div>'+
+        '<div class="consent"><input type="checkbox" name="privacy" id="pv-'+car.serialNumber+'">'+
+          '<label for="pv-'+car.serialNumber+'">Ho letto e accetto l\'<a href="'+esc(CFG.PRIVACY_URL)+'" target="_blank" rel="noopener">informativa privacy</a>.</label></div>'+
+        '<div class="back__actions"><button class="btn-back" type="button" data-flip="0">Indietro</button>'+
+          '<button class="btn-submit" type="submit">Invia richiesta</button></div>'+
       '</form>';
   }
 
-  /* ---------- render ---------- */
   function render(cars){
     if(!cars.length){ grid.innerHTML='<div class="state">Nessuna delle auto richieste &egrave; al momento disponibile.</div>'; postHeight(); return; }
     grid.innerHTML="";
@@ -269,69 +365,53 @@ a{ color:inherit; text-decoration:none; }
       wrap.className="flip"; wrap.dataset.sn=car.serialNumber;
       wrap.innerHTML='<div class="flip__inner">'+
         '<div class="flip__face flip__face--front">'+frontFace(car)+'</div>'+
-        '<div class="flip__face flip__face--back">'+backFace(car)+'</div>'+
-      '</div>';
+        '<div class="flip__face flip__face--back">'+backFace(car)+'</div></div>';
       grid.appendChild(wrap);
       bindCard(wrap,car);
-      loadGallery(wrap,car);       // carica la gallery completa dal dettaglio
+      loadGallery(wrap,car);
     });
     postHeight();
   }
 
-  /* ---------- gallery (carica tutte le foto dal dettaglio) ---------- */
+  /* ---------- gallery: carica tutte le foto dal dettaglio ---------- */
   function loadGallery(wrap, car){
     fetch(CFG.API_BASE+"/cars/"+encodeURIComponent(car.serialNumber)+"?key="+K,{headers:{Accept:"application/json"}})
       .then(function(r){ return r.ok?r.json():null; })
       .then(function(res){
-        var c = Array.isArray(res)?res[0]:res;
-        var imgs = (c&&c.images&&c.images.length)?c.images:(car.images||[]);
-        if(imgs.length>1) buildGallery(wrap, car, imgs);
+        var c=Array.isArray(res)?res[0]:res;
+        var imgs=(c&&c.images&&c.images.length)?c.images:(car.images||[]);
+        var urls=imgs.map(function(im){ return im.imageUrl||im.thumbnailUrl; }).filter(Boolean);
+        setupGallery(wrap, car, urls);
       })
-      .catch(function(){});
+      .catch(function(){ // fallback: almeno la foto principale
+        var first=(car.images&&car.images[0])?(car.images[0].imageUrl):null;
+        setupGallery(wrap, car, first?[first]:[]);
+      });
   }
 
-  function buildGallery(wrap, car, imgs){
-    var gal=wrap.querySelector(".gallery"); if(!gal) return;
-    var track=gal.querySelector(".gallery__track");
-    track.innerHTML = imgs.map(function(im){
-      var u=im.imageUrl||im.thumbnailUrl||""; if(!u) return "";
-      return '<div class="gallery__slide"><img src="'+esc(u)+'" alt="'+esc(car.brand+" "+car.model)+'" loading="lazy"></div>';
+  function setupGallery(wrap, car, urls){
+    var gal=wrap.querySelector(".gallery"); if(!gal||!urls.length) return;
+    var slider=gal.querySelector(".slider");
+    var track=gal.querySelector(".slider__track");
+    track.innerHTML = urls.map(function(u){
+      return '<div class="slider__slide"><img src="'+esc(u)+'" alt="'+esc(car.brand+" "+car.model)+'" loading="lazy"></div>';
     }).join("");
-
-    // frecce
-    var prev=document.createElement("button"); prev.className="gal-nav gal-nav--prev"; prev.type="button"; prev.innerHTML="&#8249;"; prev.setAttribute("aria-label","Foto precedente");
-    var next=document.createElement("button"); next.className="gal-nav gal-nav--next"; next.type="button"; next.innerHTML="&#8250;"; next.setAttribute("aria-label","Foto successiva");
-    gal.appendChild(prev); gal.appendChild(next);
-    // contatore + dots
-    var count=document.createElement("div"); count.className="gal-count"; count.textContent="1/"+imgs.length; gal.appendChild(count);
-    var dots=document.createElement("div"); dots.className="gal-dots";
-    imgs.forEach(function(_,i){ var d=document.createElement("span"); d.className="gal-dot"+(i===0?" is-active":""); dots.appendChild(d); });
-    gal.appendChild(dots);
-
-    function idx(){ return Math.round(track.scrollLeft/track.clientWidth); }
-    function go(i){ i=Math.max(0,Math.min(imgs.length-1,i)); track.scrollTo({left:i*track.clientWidth,behavior:"smooth"}); }
-    function sync(){
-      var i=idx();
-      count.textContent=(i+1)+"/"+imgs.length;
-      dots.querySelectorAll(".gal-dot").forEach(function(d,j){ d.classList.toggle("is-active",j===i); });
-      prev.disabled=(i<=0); next.disabled=(i>=imgs.length-1);
-    }
-    prev.addEventListener("click",function(e){ e.stopPropagation(); go(idx()-1); });
-    next.addEventListener("click",function(e){ e.stopPropagation(); go(idx()+1); });
-    track.addEventListener("scroll",function(){ window.requestAnimationFrame(sync); },{passive:true});
-    sync();
+    initSlider(slider, {
+      controls: urls.length>1,
+      onTap: function(idx){ openLightbox(urls, idx); }   // tap sulla foto -> fullscreen
+    });
   }
 
-  /* ---------- interazione ---------- */
+  /* ---------- interazione card ---------- */
   function bindCard(wrap, car){
     wrap.addEventListener("click", function(e){
-      if(e.target.closest(".gallery")) return;          // i click sulla gallery non girano la card
+      if(e.target.closest(".gallery")) return;
       var t=e.target.closest("[data-flip]"); if(!t) return;
       if(t.getAttribute("data-flip")==="1") wrap.classList.add("is-flipped");
       else wrap.classList.remove("is-flipped");
       setTimeout(postHeight,560);
     });
-    wrap.querySelector("form").addEventListener("submit", function(e){ e.preventDefault(); submitLead(this,car,wrap); });
+    wrap.querySelector("form").addEventListener("submit", function(e){ e.preventDefault(); submitLead(this,car); });
   }
 
   /* ---------- invio lead ---------- */
@@ -343,31 +423,19 @@ a{ color:inherit; text-decoration:none; }
       .forEach(function(p){ form[p[0]].classList.toggle("invalid",!p[1]); if(!p[1]) ok=false; });
     var consent=form.querySelector(".consent"); consent.classList.toggle("invalid",!f.privacy); if(!f.privacy) ok=false;
     if(!ok) return;
-
     var btn=form.querySelector(".btn-submit"); btn.disabled=true; btn.textContent="Invio in corso...";
-
-    var body={
-      category: CFG.LEAD_CATEGORY,           // "auto.info"
-      data:{
-        firstname:f.firstname, lastname:f.lastname, email:f.email, phone:f.phone,
-        province:"", city:"", note:"",
-        privacy:true,
-        dealerId: car.dealerId||"",
-        serialNumber: car.serialNumber,
-        url: CFG.DETAIL_PATH + (car.slug||""),   // relativo!
-        gclid:"", fbclid:"",
-        privacy_promo:false, privacy_survey:false, privacy_communication:false
-      }
-    };
-    fetch(CFG.API_BASE+"/contact/request?key="+K,{
-      method:"POST", headers:{"Content-Type":"application/json",Accept:"application/json"},
-      body:JSON.stringify(body)
-    })
-    .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.text(); })
-    .then(function(){ showResult(form,true); })
-    .catch(function(){ btn.disabled=false; btn.textContent="Invia richiesta"; showResult(form,false); });
+    var body={ category:CFG.LEAD_CATEGORY, data:{
+      firstname:f.firstname, lastname:f.lastname, email:f.email, phone:f.phone,
+      province:"", city:"", note:"", privacy:true,
+      dealerId:car.dealerId||"", serialNumber:car.serialNumber,
+      url:CFG.DETAIL_PATH+(car.slug||""), gclid:"", fbclid:"",
+      privacy_promo:false, privacy_survey:false, privacy_communication:false } };
+    fetch(CFG.API_BASE+"/contact/request?key="+K,{ method:"POST",
+      headers:{"Content-Type":"application/json",Accept:"application/json"}, body:JSON.stringify(body) })
+      .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.text(); })
+      .then(function(){ showResult(form,true); })
+      .catch(function(){ btn.disabled=false; btn.textContent="Invia richiesta"; showResult(form,false); });
   }
-
   function showResult(form, ok){
     form.innerHTML = ok
       ? '<div class="back__result ok"><div class="ico">&#10003;</div><h4>Richiesta inviata</h4><p>Grazie! Un nostro consulente ti contatter&agrave; a breve.</p></div>'
@@ -379,7 +447,6 @@ a{ color:inherit; text-decoration:none; }
     grid.innerHTML='<div class="state">Impossibile caricare le auto in questo momento.<br><button id="retry">Riprova</button></div>';
     document.getElementById("retry").addEventListener("click", boot); postHeight();
   }
-
   function skeletons(n){
     grid.innerHTML="";
     for(var i=0;i<n;i++){ var d=document.createElement("div"); d.className="flip skeleton";
