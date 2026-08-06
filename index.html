@@ -103,7 +103,9 @@ a{ color:inherit; text-decoration:none; }
 .price__label{ font-size:11px; color:var(--ink-soft); }
 .price__old{ font-size:13px; color:#9aa7b2; text-decoration:line-through; }
 .price__now{ font-size:26px; font-weight:800; color:var(--accent); line-height:1; display:block; margin-top:0; }
-.price__cust{ font-size:11px; font-weight:800; letter-spacing:.4px; text-transform:uppercase; color:var(--accent-2); margin:4px 0 2px; }
+.card__where{ display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-soft); }
+.card__where .pin{ color:var(--accent-2); flex:0 0 auto; }
+.card__where strong{ color:var(--ink); font-weight:700; }
 .card__tags{ display:flex; gap:6px; flex-wrap:nowrap; }
 .card__tags .badge{ font-size:10px; padding:5px 8px; letter-spacing:.3px; }
 
@@ -335,7 +337,7 @@ a{ color:inherit; text-decoration:none; }
 
   function badges(car){
     var out="";
-    if(car.promo && car.promo.name) out+='<span class="badge badge--offer">Offerta clienti Top</span>';
+    if(car.promo && car.promo.name) out+='<span class="badge badge--offer">Offerta esclusiva</span>';
     if((car.tags||[]).indexOf("in_stock")>-1) out+='<span class="badge badge--stock">Usato garantito</span>';
     return out;
   }
@@ -350,7 +352,6 @@ a{ color:inherit; text-decoration:none; }
     if(car.mileageKm!=null)     parts.push(num(car.mileageKm)+" km");
     if(t.gearType)              parts.push(esc(t.gearType));
     if(t.fuelType)              parts.push(esc(t.fuelType));
-    if(v.venueTown)             parts.push(esc(v.venueTown));
     return parts.map(function(p){return "<span>"+p+"</span>";}).join("");
   }
 
@@ -364,6 +365,8 @@ a{ color:inherit; text-decoration:none; }
       ? '<div class="price__market"><span class="price__label">Prezzo medio di mercato</span><span class="price__old">&euro; '+num(market)+'</span></div>' : "";
     var version=esc(car.label||car.version||"");
     var tags=badges(car);
+    var town=(car.venue&&car.venue.venueTown)?esc(car.venue.venueTown):"";
+    var PIN='<svg class="pin" viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>';
     return ''+
       '<div class="gallery" data-gallery="'+esc(car.serialNumber)+'">'+
         '<div class="slider"><div class="slider__track">'+slide0+'</div></div>'+
@@ -374,7 +377,8 @@ a{ color:inherit; text-decoration:none; }
         (version?'<p class="card__version" title="'+version+'">'+version+'</p>':'')+
         (tags?'<div class="card__tags">'+tags+'</div>':'')+
         '<div class="card__meta">'+metaLine(car)+'</div>'+
-        '<div class="price">'+priceMarket+'<div class="price__cust">Prezzo clienti Ferrari Motors</div><span class="price__now">&euro; '+num(car.displayPrice||car.price)+'</span></div>'+
+        (town?'<div class="card__where">'+PIN+'<span>Disponibile a: <strong>'+town+'</strong></span></div>':'')+
+        '<div class="price">'+priceMarket+'<span class="price__now">&euro; '+num(car.displayPrice||car.price)+'</span></div>'+
         '<button class="cta" type="button" data-flip="1">Richiedi info</button>'+
       '</div>';
   }
@@ -390,7 +394,10 @@ a{ color:inherit; text-decoration:none; }
           '<div class="field"><label>Cognome</label><input name="lastname" autocomplete="family-name" required></div>'+
         '</div>'+
         '<div class="field"><label>Email</label><input name="email" type="email" autocomplete="email" required></div>'+
-        '<div class="field"><label>Telefono</label><input name="phone" type="tel" autocomplete="tel" required></div>'+
+        '<div class="field-row">'+
+          '<div class="field"><label>Telefono</label><input name="phone" type="tel" autocomplete="tel" required></div>'+
+          '<div class="field"><label>Citt&agrave;</label><input name="city" autocomplete="address-level2" required></div>'+
+        '</div>'+
         '<div class="consent"><input type="checkbox" name="privacy" id="pv-'+car.serialNumber+'">'+
           '<label for="pv-'+car.serialNumber+'">Ho letto e accetto l\'<a href="'+esc(CFG.PRIVACY_URL)+'" target="_blank" rel="noopener">informativa privacy</a>.</label></div>'+
         '<div class="back__actions"><button class="btn-back" type="button" data-flip="0">Indietro</button>'+
@@ -461,16 +468,17 @@ a{ color:inherit; text-decoration:none; }
   /* ---------- invio lead ---------- */
   function submitLead(form, car){
     var f={ firstname:form.firstname.value.trim(), lastname:form.lastname.value.trim(),
-            email:form.email.value.trim(), phone:form.phone.value.trim(), privacy:form.privacy.checked };
+            email:form.email.value.trim(), phone:form.phone.value.trim(),
+            city:form.city.value.trim(), privacy:form.privacy.checked };
     var ok=true;
-    [["firstname",!!f.firstname],["lastname",!!f.lastname],["email",isEmail(f.email)],["phone",isPhone(f.phone)]]
+    [["firstname",!!f.firstname],["lastname",!!f.lastname],["email",isEmail(f.email)],["phone",isPhone(f.phone)],["city",!!f.city]]
       .forEach(function(p){ form[p[0]].classList.toggle("invalid",!p[1]); if(!p[1]) ok=false; });
     var consent=form.querySelector(".consent"); consent.classList.toggle("invalid",!f.privacy); if(!f.privacy) ok=false;
     if(!ok) return;
     var btn=form.querySelector(".btn-submit"); btn.disabled=true; btn.textContent="Invio in corso...";
     var body={ category:CFG.LEAD_CATEGORY, data:{
       firstname:f.firstname, lastname:f.lastname, email:f.email, phone:f.phone,
-      province:"", city:"", note:"", privacy:true,
+      province:"", city:f.city, note:"", privacy:true,
       dealerId:car.dealerId||"", serialNumber:car.serialNumber,
       url:CFG.DETAIL_PATH+(car.slug||""), gclid:"", fbclid:"",
       privacy_promo:false, privacy_survey:false, privacy_communication:false } };
