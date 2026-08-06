@@ -81,6 +81,8 @@ a{ color:inherit; text-decoration:none; }
 .gal-dot{ width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.6); box-shadow:0 0 2px rgba(0,0,0,.5); transition:background .18s,width .18s; }
 .gal-dot.is-active{ background:#fff; width:16px; border-radius:3px; }
 .gal-count{ position:absolute; top:10px; right:10px; z-index:4; background:rgba(0,23,51,.75); color:#fff; font-size:11px; font-weight:600; padding:3px 8px; border-radius:20px; pointer-events:none; }
+.gal-fs{ position:absolute; right:8px; bottom:7px; z-index:5; width:30px; height:30px; border:0; border-radius:8px; background:var(--bg); color:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(0,0,0,.35); opacity:.92; transition:opacity .15s, background .15s; }
+.gal-fs:hover{ opacity:1; background:#012a5c; }
 
 .card__badges{ position:absolute; top:12px; left:12px; display:flex; gap:6px; flex-wrap:wrap; max-width:calc(100% - 24px); z-index:4; }
 .badge{ font-size:10.5px; font-weight:700; letter-spacing:.4px; text-transform:uppercase; color:#fff; padding:5px 9px; border-radius:6px; line-height:1; white-space:nowrap; box-shadow:0 2px 6px rgba(0,0,0,.18); }
@@ -100,7 +102,8 @@ a{ color:inherit; text-decoration:none; }
 .price__market{ display:flex; align-items:baseline; gap:7px; flex-wrap:wrap; margin-bottom:2px; }
 .price__label{ font-size:11px; color:var(--ink-soft); }
 .price__old{ font-size:13px; color:#9aa7b2; text-decoration:line-through; }
-.price__now{ font-size:26px; font-weight:800; color:var(--accent); line-height:1; display:block; margin-top:2px; }
+.price__now{ font-size:26px; font-weight:800; color:var(--accent); line-height:1; display:block; margin-top:0; }
+.price__cust{ font-size:11px; font-weight:800; letter-spacing:.4px; text-transform:uppercase; color:var(--accent-2); margin:4px 0 2px; }
 .card__tags{ display:flex; gap:6px; flex-wrap:nowrap; }
 .card__tags .badge{ font-size:10px; padding:5px 8px; letter-spacing:.3px; }
 
@@ -345,8 +348,8 @@ a{ color:inherit; text-decoration:none; }
     var t=car.tech||{}, v=car.venue||{}, parts=[];
     if(car.computedVehicleYear) parts.push(esc(car.computedVehicleYear));
     if(car.mileageKm!=null)     parts.push(num(car.mileageKm)+" km");
-    if(t.fuelType)              parts.push(esc(t.fuelType));
     if(t.gearType)              parts.push(esc(t.gearType));
+    if(t.fuelType)              parts.push(esc(t.fuelType));
     if(v.venueTown)             parts.push(esc(v.venueTown));
     return parts.map(function(p){return "<span>"+p+"</span>";}).join("");
   }
@@ -371,7 +374,7 @@ a{ color:inherit; text-decoration:none; }
         (version?'<p class="card__version" title="'+version+'">'+version+'</p>':'')+
         (tags?'<div class="card__tags">'+tags+'</div>':'')+
         '<div class="card__meta">'+metaLine(car)+'</div>'+
-        '<div class="price">'+priceMarket+'<span class="price__now">&euro; '+num(car.displayPrice||car.price)+'</span></div>'+
+        '<div class="price">'+priceMarket+'<div class="price__cust">Prezzo clienti Ferrari Motors</div><span class="price__now">&euro; '+num(car.displayPrice||car.price)+'</span></div>'+
         '<button class="cta" type="button" data-flip="1">Richiedi info</button>'+
       '</div>';
   }
@@ -429,15 +432,18 @@ a{ color:inherit; text-decoration:none; }
 
   function setupGallery(wrap, car, urls){
     var gal=wrap.querySelector(".gallery"); if(!gal||!urls.length) return;
-    var slider=gal.querySelector(".slider");
+    var sliderEl=gal.querySelector(".slider");
     var track=gal.querySelector(".slider__track");
     track.innerHTML = urls.map(function(u){
       return '<div class="slider__slide"><img src="'+esc(u)+'" alt="'+esc(car.brand+" "+car.model)+'" loading="lazy"></div>';
     }).join("");
-    initSlider(slider, {
-      arrows:false, counter:false, dots:true,
-      onTap: function(idx){ openLightbox(urls, idx); }   // tap sulla foto -> fullscreen
-    });
+    var inst=initSlider(sliderEl, { arrows:false, counter:false, dots:true });   // niente apertura al tocco
+    // icona fullscreen dedicata (in basso a destra, accanto ai pallini)
+    var fs=document.createElement("button");
+    fs.type="button"; fs.className="gal-fs"; fs.setAttribute("aria-label","Apri le foto a schermo intero");
+    fs.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
+    gal.appendChild(fs);
+    fs.addEventListener("click", function(e){ e.stopPropagation(); openLightbox(urls, inst.index()); });
   }
 
   /* ---------- interazione card ---------- */
