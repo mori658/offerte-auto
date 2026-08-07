@@ -15,6 +15,8 @@ window.WIDGET_CONFIG = {
   DETAIL_PATH: "/auto/",
   PRIVACY_URL: "https://intergeanordest.it/landing/privacy-informativa-clienti-ferrarimotors",
   LEAD_CATEGORY: "auto.info",
+  // Testo fisso inviato come commento del lead (jsonlead: comments[].content / inquiry)
+  LEAD_COMMENT: "Promozione esclusiva per clienti selezionati Ferrari Motors",
   SERIALS: [
     "11537834","11677203","11626980","11640448","11625772","11633964",
     "11633965","10893008","11522115","11593861","9060904","9633653",
@@ -45,6 +47,33 @@ button{ font-family:inherit; cursor:pointer; }
 a{ color:inherit; text-decoration:none; }
 
 .grid{ display:grid; gap:22px; grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr)); max-width:1200px; margin:0 auto; }
+
+/* ---- filtri ---- */
+.filters{ position:relative; z-index:50; max-width:1200px; margin:0 auto 18px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.ms{ position:relative; }
+.ms__btn{ display:flex; align-items:center; gap:6px; background:#fff; border:1.5px solid var(--card-line); color:var(--ink); font-size:13.5px; font-weight:600; padding:9px 12px; border-radius:12px; cursor:pointer; }
+.ms__btn.is-active{ border-color:var(--accent-2); box-shadow:0 0 0 2px rgba(66,183,223,.2); }
+.ms__count{ color:var(--accent); }
+.ms__chev{ color:var(--ink-soft); font-size:11px; }
+.ms__panel{ display:none; position:absolute; top:calc(100% + 6px); left:0; min-width:210px; max-height:290px; overflow:auto; background:#fff; border:1px solid var(--card-line); border-radius:12px; box-shadow:var(--shadow); padding:6px; z-index:60; }
+.ms.is-open .ms__panel{ display:block; }
+.ms__opt{ display:flex; align-items:center; gap:8px; padding:7px 8px; font-size:13.5px; color:var(--ink); border-radius:8px; cursor:pointer; white-space:nowrap; }
+.ms__opt:hover{ background:#f2f6fa; }
+.ms__opt input{ width:15px; height:15px; accent-color:var(--accent-2); flex:0 0 auto; }
+.price-filter{ display:flex; align-items:center; gap:8px; background:#fff; border:1.5px solid var(--card-line); border-radius:12px; padding:6px 10px; }
+.pf__lab{ font-size:13.5px; font-weight:600; color:var(--ink); }
+.pf__box{ display:flex; align-items:center; gap:3px; background:#fbfdff; border:1px solid var(--card-line); border-radius:8px; padding:4px 7px; }
+.pf__box>span{ color:var(--ink-soft); font-size:13px; }
+.pf__box input{ width:62px; border:0; background:transparent; outline:none; font-size:13.5px; color:var(--ink); }
+.pf__dash{ color:var(--ink-soft); }
+.filters__reset{ background:transparent; border:0; color:#bcd2ea; font-size:13px; text-decoration:underline; padding:6px; cursor:pointer; }
+.filters__reset:hover{ color:#fff; }
+.filters__count{ color:#c7d6ea; font-size:13px; margin-left:auto; white-space:nowrap; }
+.is-hidden{ display:none !important; }
+.grid__empty{ display:none; grid-column:1/-1; text-align:center; color:#c7d6ea; padding:44px 20px; font-size:15px; }
+@media (max-width:560px){
+  .filters__count{ margin-left:0; width:100%; }
+}
 
 .flip{ perspective:1600px; }
 .flip__inner{ display:grid; transform-style:preserve-3d; transition:transform .55s cubic-bezier(.2,.7,.2,1); min-height:440px; }
@@ -405,19 +434,113 @@ a{ color:inherit; text-decoration:none; }
       '</form>';
   }
 
+  var galObserver=null, countEl=null, emptyEl=null, filterCtrls=null;
+
   function render(cars){
     if(!cars.length){ grid.innerHTML='<div class="state">Nessuna delle auto richieste &egrave; al momento disponibile.</div>'; postHeight(); return; }
+
+    buildFilters(cars);
+
+    // lazy-load delle gallery: scarica le foto solo quando la card sta per entrare a schermo
+    if(galObserver) galObserver.disconnect();
+    galObserver = ("IntersectionObserver" in window) ? new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ var w=e.target; if(!w._galLoaded){ w._galLoaded=true; loadGallery(w, w._car); } galObserver.unobserve(w); }
+      });
+    }, { rootMargin:"300px 0px" }) : null;
+
     grid.innerHTML="";
+    emptyEl=document.createElement("div"); emptyEl.className="grid__empty"; emptyEl.textContent="Nessuna auto corrisponde ai filtri selezionati.";
+    grid.appendChild(emptyEl);
+
     cars.forEach(function(car){
       var wrap=document.createElement("div");
-      wrap.className="flip"; wrap.dataset.sn=car.serialNumber;
+      wrap.className="flip"; wrap.dataset.sn=car.serialNumber; wrap._car=car;
       wrap.innerHTML='<div class="flip__inner">'+
         '<div class="flip__face flip__face--front">'+frontFace(car)+'</div>'+
         '<div class="flip__face flip__face--back">'+backFace(car)+'</div></div>';
       grid.appendChild(wrap);
       bindCard(wrap,car);
-      loadGallery(wrap,car);
+      if(galObserver) galObserver.observe(wrap); else loadGallery(wrap,car);
     });
+    applyFilters();
+    postHeight();
+  }
+
+  /* ---------- filtri (client-side) ---------- */
+  function distinct(arr){ var out=[]; arr.forEach(function(v){ if(v&&out.indexOf(v)<0) out.push(v); }); return out.sort(function(a,b){ return String(a).localeCompare(String(b),"it"); }); }
+  function toSet(a){ var s={}; a.forEach(function(v){ s[v]=1; }); return s; }
+
+  function closeAllMS(except){ [].forEach.call(document.querySelectorAll(".ms.is-open"),function(m){ if(m!==except) m.classList.remove("is-open"); }); }
+  document.addEventListener("click",function(){ closeAllMS(null); });
+
+  function makeMulti(label, values, onChange){
+    var wrap=document.createElement("div"); wrap.className="ms";
+    var btn=document.createElement("button"); btn.type="button"; btn.className="ms__btn";
+    btn.innerHTML='<span>'+label+'</span><span class="ms__count"></span><span class="ms__chev">&#9662;</span>';
+    var panel=document.createElement("div"); panel.className="ms__panel";
+    var sel={};
+    values.forEach(function(v){
+      var lab=document.createElement("label"); lab.className="ms__opt";
+      var cb=document.createElement("input"); cb.type="checkbox"; cb.value=v;
+      cb.addEventListener("change",function(){ if(cb.checked) sel[v]=1; else delete sel[v]; upd(); onChange(); });
+      lab.appendChild(cb); lab.appendChild(document.createTextNode(" "+v)); panel.appendChild(lab);
+    });
+    function upd(){ var n=Object.keys(sel).length; wrap.querySelector(".ms__count").textContent=n?(" ("+n+")"):""; btn.classList.toggle("is-active",!!n); }
+    btn.addEventListener("click",function(e){ e.stopPropagation(); var open=wrap.classList.contains("is-open"); closeAllMS(wrap); wrap.classList.toggle("is-open",!open); });
+    panel.addEventListener("click",function(e){ e.stopPropagation(); });
+    wrap.appendChild(btn); wrap.appendChild(panel);
+    wrap.getValues=function(){ return Object.keys(sel); };
+    wrap.clear=function(){ sel={}; [].forEach.call(panel.querySelectorAll("input"),function(c){ c.checked=false; }); upd(); };
+    return wrap;
+  }
+
+  function makePrice(onChange){
+    var wrap=document.createElement("div"); wrap.className="price-filter";
+    wrap.innerHTML='<span class="pf__lab">Prezzo</span>'+
+      '<span class="pf__box"><span>&euro;</span><input type="number" class="pf__min" inputmode="numeric" min="0" placeholder="min"></span>'+
+      '<span class="pf__dash">&ndash;</span>'+
+      '<span class="pf__box"><span>&euro;</span><input type="number" class="pf__max" inputmode="numeric" min="0" placeholder="max"></span>';
+    var mn=wrap.querySelector(".pf__min"), mx=wrap.querySelector(".pf__max");
+    mn.addEventListener("input",onChange); mx.addEventListener("input",onChange);
+    wrap.getRange=function(){ return [ mn.value!==""?parseFloat(mn.value):null, mx.value!==""?parseFloat(mx.value):null ]; };
+    wrap.clear=function(){ mn.value=""; mx.value=""; };
+    return wrap;
+  }
+
+  function buildFilters(cars){
+    var old=document.querySelector(".filters"); if(old) old.remove();
+    var bar=document.createElement("div"); bar.className="filters";
+    var marca=makeMulti("Marca", distinct(cars.map(function(c){return c.brand;})), applyFilters);
+    var alim =makeMulti("Alimentazione", distinct(cars.map(function(c){return (c.tech||{}).fuelType;})), applyFilters);
+    var sede =makeMulti("Sede", distinct(cars.map(function(c){return (c.venue||{}).venueTown;})), applyFilters);
+    var price=makePrice(applyFilters);
+    var reset=document.createElement("button"); reset.type="button"; reset.className="filters__reset"; reset.textContent="Azzera filtri";
+    reset.addEventListener("click",function(){ marca.clear(); alim.clear(); sede.clear(); price.clear(); applyFilters(); });
+    countEl=document.createElement("div"); countEl.className="filters__count";
+    bar.appendChild(marca); bar.appendChild(alim); bar.appendChild(sede); bar.appendChild(price); bar.appendChild(reset); bar.appendChild(countEl);
+    grid.parentNode.insertBefore(bar, grid);
+    filterCtrls={ marca:marca, alim:alim, sede:sede, price:price };
+  }
+
+  function applyFilters(){
+    if(!filterCtrls) return;
+    var b=filterCtrls.marca.getValues(), a=filterCtrls.alim.getValues(), s=filterCtrls.sede.getValues(), r=filterCtrls.price.getRange();
+    var bs=toSet(b), as=toSet(a), ss=toSet(s), mn=r[0], mx=r[1], n=0;
+    [].forEach.call(grid.children,function(w){
+      var c=w._car; if(!c) return;
+      var ok=true;
+      if(b.length && !bs[c.brand]) ok=false;
+      if(a.length && !as[(c.tech||{}).fuelType]) ok=false;
+      if(s.length && !ss[(c.venue||{}).venueTown]) ok=false;
+      var pr=c.displayPrice||c.price||0;
+      if(mn!=null && pr<mn) ok=false;
+      if(mx!=null && pr>mx) ok=false;
+      w.classList.toggle("is-hidden",!ok);
+      if(ok) n++;
+    });
+    if(countEl) countEl.textContent = n+(n===1?" auto disponibile":" auto disponibili");
+    if(emptyEl) emptyEl.style.display = n?"none":"block";
     postHeight();
   }
 
@@ -478,7 +601,7 @@ a{ color:inherit; text-decoration:none; }
     var btn=form.querySelector(".btn-submit"); btn.disabled=true; btn.textContent="Invio in corso...";
     var body={ category:CFG.LEAD_CATEGORY, data:{
       firstname:f.firstname, lastname:f.lastname, email:f.email, phone:f.phone,
-      province:"", city:f.city, note:"", privacy:true,
+      province:"", city:f.city, note:CFG.LEAD_COMMENT, privacy:true,
       dealerId:car.dealerId||"", serialNumber:car.serialNumber,
       url:CFG.DETAIL_PATH+(car.slug||""), gclid:"", fbclid:"",
       privacy_promo:false, privacy_survey:false, privacy_communication:false } };
