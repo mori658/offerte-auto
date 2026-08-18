@@ -16,11 +16,33 @@ window.WIDGET_CONFIG = {
   PRIVACY_URL: "https://intergeanordest.it/landing/privacy-informativa-clienti-ferrarimotors",
   LEAD_CATEGORY: "auto.info",
   // Testo fisso inviato come commento del lead (jsonlead: comments[].content / inquiry)
-  LEAD_COMMENT: "Promozione esclusiva per clienti selezionati Ferrari Motors",
+  LEAD_COMMENT: "Promozione esclusiva per clienti selezionati Ferrari Motors - Consulta la lista prezzi qui https://intergeanordest.it/landing/offerte-auto-clienti-ferrari-motors",
   SERIALS: [
-    "11537834","11677203","11626980","11640448","11625772","11633964",
-    "11633965","10893008","11522115","11593861","9060904","9633653",
-    "11522111","9631199","11522113","11522117","11625771","11553094","11625770"
+    "6822275","6483417","6799845","7795304","8182528","8878762",
+    "8922229","7510639","8691505","9453781","9154130","9788819",
+    "8968850","8968852","9154129","9769327","9803825","9803826",
+    "9803824","9967554","7636749","9797461","9797459","9990549",
+    "9986406","9990550","10180371","9949485","10458893","10458900",
+    "8603769","10463663","10458892","10458896","10543959","10551181",
+    "10003621","10544463","10451579","10544464","10543969","10614886",
+    "10614890","10614891","10614893","10614888","10563196","10714148",
+    "10714144","10551185","10719781","10714150","10551756","10563197",
+    "10551765","10551758","10563200","10551755","10551761","10552771",
+    "10552772","10552777","10552773","10813276","10552776","10714152",
+    "10561644","10714155","10808484","10551754","10551759","10551753",
+    "10751540","10784073","10770760","8968865","8690678","10561643",
+    "10813284","10813270","10761728","10809509","10837891","10816375",
+    "10848406","10551182","10809515","10826789","10885832","10767973",
+    "10885831","10887308","10887309","10814660","10912404","10887319",
+    "10889135","10889136","10889138","10889139","10614885","10889137",
+    "10890275","10963508","11022898","10770766","8710571","10814663",
+    "10926692","10926698","10926694","10976144","10976143","10926713",
+    "10503289","10969435","10976142","11036333","10551768","10926691",
+    "10988611","10933966","10933968","10933965","11063631","11079088",
+    "11012683","10820926","11123642","10784076","11175159","11176169",
+    "11121594","11175156","11175157","11175158","11121595","11175155",
+    "11101425","11121591","11001089","10808486","11176158","11176157",
+    "11015329","11137965","11154716","11202896","11202899"
   ]
 };
 </script>
@@ -495,12 +517,15 @@ a{ color:inherit; text-decoration:none; }
     return wrap;
   }
 
-  function makePrice(onChange){
+  function makeRange(label, opts, onChange){
+    opts=opts||{};
+    var pre = opts.pre?('<span>'+opts.pre+'</span>'):'';
+    var post= opts.post?('<span>'+opts.post+'</span>'):'';
     var wrap=document.createElement("div"); wrap.className="price-filter";
-    wrap.innerHTML='<span class="pf__lab">Prezzo</span>'+
-      '<span class="pf__box"><span>&euro;</span><input type="number" class="pf__min" inputmode="numeric" min="0" placeholder="min"></span>'+
+    wrap.innerHTML='<span class="pf__lab">'+label+'</span>'+
+      '<span class="pf__box">'+pre+'<input type="number" class="pf__min" inputmode="numeric" min="0" placeholder="min">'+post+'</span>'+
       '<span class="pf__dash">&ndash;</span>'+
-      '<span class="pf__box"><span>&euro;</span><input type="number" class="pf__max" inputmode="numeric" min="0" placeholder="max"></span>';
+      '<span class="pf__box">'+pre+'<input type="number" class="pf__max" inputmode="numeric" min="0" placeholder="max">'+post+'</span>';
     var mn=wrap.querySelector(".pf__min"), mx=wrap.querySelector(".pf__max");
     mn.addEventListener("input",onChange); mx.addEventListener("input",onChange);
     wrap.getRange=function(){ return [ mn.value!==""?parseFloat(mn.value):null, mx.value!==""?parseFloat(mx.value):null ]; };
@@ -511,31 +536,39 @@ a{ color:inherit; text-decoration:none; }
   function buildFilters(cars){
     var old=document.querySelector(".filters"); if(old) old.remove();
     var bar=document.createElement("div"); bar.className="filters";
+    var years=distinct(cars.map(function(c){return c.computedVehicleYear;})).sort(function(a,b){ return Number(b)-Number(a); });
     var marca=makeMulti("Marca", distinct(cars.map(function(c){return c.brand;})), applyFilters);
     var alim =makeMulti("Alimentazione", distinct(cars.map(function(c){return (c.tech||{}).fuelType;})), applyFilters);
-    var sede =makeMulti("Sede", distinct(cars.map(function(c){return (c.venue||{}).venueTown;})), applyFilters);
-    var price=makePrice(applyFilters);
+    var anno =makeMulti("Anno", years, applyFilters);
+    var citta=makeMulti("Citt\u00e0", distinct(cars.map(function(c){return (c.venue||{}).venueTown;})), applyFilters);
+    var price=makeRange("Prezzo", {pre:"\u20ac"}, applyFilters);
+    var km   =makeRange("Km", {post:"km"}, applyFilters);
     var reset=document.createElement("button"); reset.type="button"; reset.className="filters__reset"; reset.textContent="Azzera filtri";
-    reset.addEventListener("click",function(){ marca.clear(); alim.clear(); sede.clear(); price.clear(); applyFilters(); });
+    reset.addEventListener("click",function(){ marca.clear(); alim.clear(); anno.clear(); citta.clear(); price.clear(); km.clear(); applyFilters(); });
     countEl=document.createElement("div"); countEl.className="filters__count";
-    bar.appendChild(marca); bar.appendChild(alim); bar.appendChild(sede); bar.appendChild(price); bar.appendChild(reset); bar.appendChild(countEl);
+    bar.appendChild(marca); bar.appendChild(alim); bar.appendChild(anno); bar.appendChild(citta); bar.appendChild(price); bar.appendChild(km); bar.appendChild(reset); bar.appendChild(countEl);
     grid.parentNode.insertBefore(bar, grid);
-    filterCtrls={ marca:marca, alim:alim, sede:sede, price:price };
+    filterCtrls={ marca:marca, alim:alim, anno:anno, citta:citta, price:price, km:km };
   }
 
   function applyFilters(){
     if(!filterCtrls) return;
-    var b=filterCtrls.marca.getValues(), a=filterCtrls.alim.getValues(), s=filterCtrls.sede.getValues(), r=filterCtrls.price.getRange();
-    var bs=toSet(b), as=toSet(a), ss=toSet(s), mn=r[0], mx=r[1], n=0;
+    var b=filterCtrls.marca.getValues(), a=filterCtrls.alim.getValues(), y=filterCtrls.anno.getValues(), s=filterCtrls.citta.getValues();
+    var pr=filterCtrls.price.getRange(), kr=filterCtrls.km.getRange();
+    var bs=toSet(b), as=toSet(a), ys=toSet(y), ss=toSet(s), pmn=pr[0], pmx=pr[1], kmn=kr[0], kmx=kr[1], n=0;
     [].forEach.call(grid.children,function(w){
       var c=w._car; if(!c) return;
       var ok=true;
       if(b.length && !bs[c.brand]) ok=false;
       if(a.length && !as[(c.tech||{}).fuelType]) ok=false;
+      if(y.length && !ys[c.computedVehicleYear]) ok=false;
       if(s.length && !ss[(c.venue||{}).venueTown]) ok=false;
-      var pr=c.displayPrice||c.price||0;
-      if(mn!=null && pr<mn) ok=false;
-      if(mx!=null && pr>mx) ok=false;
+      var price=c.displayPrice||c.price||0;
+      if(pmn!=null && price<pmn) ok=false;
+      if(pmx!=null && price>pmx) ok=false;
+      var kmv=c.mileageKm||0;
+      if(kmn!=null && kmv<kmn) ok=false;
+      if(kmx!=null && kmv>kmx) ok=false;
       w.classList.toggle("is-hidden",!ok);
       if(ok) n++;
     });
