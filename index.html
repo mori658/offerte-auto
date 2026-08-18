@@ -13,6 +13,8 @@ window.WIDGET_CONFIG = {
   API_BASE:    "https://api.intergeanordest.it",
   API_KEY:     "YNcQtkvzHJUVTKeVk2doF0pWt8prUllDkeZE8pw7LomgIUw6xiTINjEMXe9JdSsp",
   DETAIL_PATH: "/auto/",
+  // Sconto (in euro) sottratto SOLO in visualizzazione al prezzo di vendita che arriva dalle API
+  PRICE_DISCOUNT: 500,
   PRIVACY_URL: "https://intergeanordest.it/landing/privacy-informativa-clienti-ferrarimotors",
   LEAD_CATEGORY: "auto.info",
   // Testo fisso inviato come commento del lead (jsonlead: comments[].content / inquiry)
@@ -177,11 +179,12 @@ a{ color:inherit; text-decoration:none; }
 .field input{ width:100%; border:1px solid var(--card-line); background:#fbfdff; color:var(--ink); border-radius:10px; padding:9px 11px; font-size:16px; outline:none; transition:border-color .15s,box-shadow .15s; }
 .field input:focus{ border-color:var(--accent-2); box-shadow:0 0 0 3px rgba(66,183,223,.15); }
 .field input.invalid{ border-color:var(--cta); box-shadow:0 0 0 3px rgba(236,91,69,.13); }
-.consent{ display:flex; gap:8px; align-items:flex-start; margin:2px 0 12px; }
+.privacy-note{ font-size:11px; color:var(--ink-soft); line-height:1.4; margin:2px 0 10px; }
+.privacy-note a{ color:var(--accent); text-decoration:underline; }
+.consents{ display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+.consent{ display:flex; gap:8px; align-items:flex-start; margin:0; cursor:pointer; }
 .consent input{ margin-top:2px; width:16px; height:16px; accent-color:var(--accent-2); flex:0 0 auto; }
-.consent label{ font-size:11px; color:var(--ink-soft); line-height:1.4; }
-.consent.invalid label{ color:var(--cta); }
-.consent a{ color:var(--accent); text-decoration:underline; }
+.consent span{ font-size:11px; color:var(--ink-soft); line-height:1.35; }
 .back__actions{ margin-top:auto; display:flex; gap:9px; }
 .btn-submit{ flex:1; border:0; background:var(--cta); color:#fff; font-size:14px; font-weight:700; padding:12px; border-radius:var(--r-sm); transition:background .18s ease; }
 .btn-submit:hover{ background:var(--cta-hover); }
@@ -249,6 +252,7 @@ a{ color:inherit; text-decoration:none; }
   sayHello(); setTimeout(sayHello,400); setTimeout(sayHello,1200);
 
   function num(n){ return (n==null||isNaN(n)) ? "" : Number(n).toLocaleString("it-IT"); }
+  function finalPrice(car){ var p=(car.displayPrice||car.price||0)-(CFG.PRICE_DISCOUNT||0); return p>0?p:0; }
   function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){
     return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); }
   function isEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
@@ -414,7 +418,8 @@ a{ color:inherit; text-decoration:none; }
       ? '<div class="slider__slide"><img src="'+esc(first)+'" alt="'+esc(car.brand+" "+car.model)+'" loading="lazy"></div>'
       : '<div class="slider__slide"></div>';
     var market=car.marketPrice;
-    var priceMarket=(market&&market>car.displayPrice)
+    var shown=finalPrice(car);
+    var priceMarket=(market&&market>shown)
       ? '<div class="price__market"><span class="price__label">Prezzo medio di mercato</span><span class="price__old">&euro; '+num(market)+'</span></div>' : "";
     var version=esc(car.label||car.version||"");
     var tags=badges(car);
@@ -431,7 +436,7 @@ a{ color:inherit; text-decoration:none; }
         (tags?'<div class="card__tags">'+tags+'</div>':'')+
         '<div class="card__meta">'+metaLine(car)+'</div>'+
         (town?'<div class="card__where">'+PIN+'<span>Disponibile a: <strong>'+town+'</strong></span></div>':'')+
-        '<div class="price">'+priceMarket+'<span class="price__now">&euro; '+num(car.displayPrice||car.price)+'</span></div>'+
+        '<div class="price">'+priceMarket+'<span class="price__now">&euro; '+num(shown)+'</span></div>'+
         '<button class="cta" type="button" data-flip="1">Richiedi info</button>'+
       '</div>';
   }
@@ -451,8 +456,12 @@ a{ color:inherit; text-decoration:none; }
           '<div class="field"><label>Telefono</label><input name="phone" type="tel" autocomplete="tel" required></div>'+
           '<div class="field"><label>Citt&agrave;</label><input name="city" autocomplete="address-level2" required></div>'+
         '</div>'+
-        '<div class="consent"><input type="checkbox" name="privacy" id="pv-'+car.serialNumber+'">'+
-          '<label for="pv-'+car.serialNumber+'">Ho letto e accetto l\'<a href="'+esc(CFG.PRIVACY_URL)+'" target="_blank" rel="noopener">informativa privacy</a>.</label></div>'+
+        '<p class="privacy-note">Cliccando su invia richiesta dichiaro di aver preso visione l\'<a href="'+esc(CFG.PRIVACY_URL)+'" target="_blank" rel="noopener">informativa privacy</a> per finalit&agrave; di contatto.</p>'+
+        '<div class="consents">'+
+          '<label class="consent"><input type="checkbox" name="promo"><span>Voglio ricevere in anteprima promozioni, novit&agrave; e vantaggi</span></label>'+
+          '<label class="consent"><input type="checkbox" name="survey"><span>Voglio aiutare a migliorare i servizi e ricevere inviti a sondaggi</span></label>'+
+          '<label class="consent"><input type="checkbox" name="partner"><span>Accetto di ricevere comunicazioni selezionate dai nostri partner fidati</span></label>'+
+        '</div>'+
         '<div class="back__actions"><button class="btn-back" type="button" data-flip="0">Indietro</button>'+
           '<button class="btn-submit" type="submit">Invia richiesta</button></div>'+
       '</form>';
@@ -566,7 +575,7 @@ a{ color:inherit; text-decoration:none; }
       if(a.length && !as[(c.tech||{}).fuelType]) ok=false;
       if(y.length && !ys[c.computedVehicleYear]) ok=false;
       if(s.length && !ss[cityGroup((c.venue||{}).venueTown)]) ok=false;
-      var price=c.displayPrice||c.price||0;
+      var price=finalPrice(c);
       if(pmn!=null && price<pmn) ok=false;
       if(pmx!=null && price>pmx) ok=false;
       var kmv=c.mileageKm||0;
@@ -628,11 +637,11 @@ a{ color:inherit; text-decoration:none; }
   function submitLead(form, car){
     var f={ firstname:form.firstname.value.trim(), lastname:form.lastname.value.trim(),
             email:form.email.value.trim(), phone:form.phone.value.trim(),
-            city:form.city.value.trim(), privacy:form.privacy.checked };
+            city:form.city.value.trim(),
+            promo:form.promo.checked, survey:form.survey.checked, partner:form.partner.checked };
     var ok=true;
     [["firstname",!!f.firstname],["lastname",!!f.lastname],["email",isEmail(f.email)],["phone",isPhone(f.phone)],["city",!!f.city]]
       .forEach(function(p){ form[p[0]].classList.toggle("invalid",!p[1]); if(!p[1]) ok=false; });
-    var consent=form.querySelector(".consent"); consent.classList.toggle("invalid",!f.privacy); if(!f.privacy) ok=false;
     if(!ok) return;
     var btn=form.querySelector(".btn-submit"); btn.disabled=true; btn.textContent="Invio in corso...";
     var body={ category:CFG.LEAD_CATEGORY, data:{
@@ -640,7 +649,7 @@ a{ color:inherit; text-decoration:none; }
       province:"", city:f.city, note:CFG.LEAD_COMMENT, privacy:true,
       dealerId:car.dealerId||"", serialNumber:car.serialNumber,
       url:CFG.DETAIL_PATH+(car.slug||""), gclid:"", fbclid:"",
-      privacy_promo:false, privacy_survey:false, privacy_communication:false } };
+      privacy_promo:f.promo, privacy_survey:f.survey, privacy_communication:f.partner } };
     fetch(CFG.API_BASE+"/contact/request?key="+K,{ method:"POST",
       headers:{"Content-Type":"application/json",Accept:"application/json"}, body:JSON.stringify(body) })
       .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.text(); })
