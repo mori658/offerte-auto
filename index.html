@@ -17,6 +17,8 @@ window.WIDGET_CONFIG = {
   LEAD_CATEGORY: "auto.info",
   // Testo fisso inviato come commento del lead (jsonlead: comments[].content / inquiry)
   LEAD_COMMENT: "Promozione esclusiva per clienti selezionati Ferrari Motors - Consulta la lista prezzi qui https://intergeanordest.it/landing/offerte-auto-clienti-ferrari-motors",
+  // Accorpamento citt\u00e0 SOLO nel filtro (la scheda mostra sempre la sede reale)
+  CITY_GROUPS: { "Prevalle":"San Zeno Naviglio", "Lonato del Garda":"San Zeno Naviglio", "Mantova":"Porto Mantovano" },
   SERIALS: [
     "6822275","6483417","6799845","7795304","8182528","8878762",
     "8922229","7510639","8691505","9453781","9154130","9788819",
@@ -492,6 +494,7 @@ a{ color:inherit; text-decoration:none; }
   /* ---------- filtri (client-side) ---------- */
   function distinct(arr){ var out=[]; arr.forEach(function(v){ if(v&&out.indexOf(v)<0) out.push(v); }); return out.sort(function(a,b){ return String(a).localeCompare(String(b),"it"); }); }
   function toSet(a){ var s={}; a.forEach(function(v){ s[v]=1; }); return s; }
+  function cityGroup(town){ var g=CFG.CITY_GROUPS||{}; return (town&&g[town])?g[town]:town; }
 
   function closeAllMS(except){ [].forEach.call(document.querySelectorAll(".ms.is-open"),function(m){ if(m!==except) m.classList.remove("is-open"); }); }
   document.addEventListener("click",function(){ closeAllMS(null); });
@@ -540,7 +543,7 @@ a{ color:inherit; text-decoration:none; }
     var marca=makeMulti("Marca", distinct(cars.map(function(c){return c.brand;})), applyFilters);
     var alim =makeMulti("Alimentazione", distinct(cars.map(function(c){return (c.tech||{}).fuelType;})), applyFilters);
     var anno =makeMulti("Anno", years, applyFilters);
-    var citta=makeMulti("Citt\u00e0", distinct(cars.map(function(c){return (c.venue||{}).venueTown;})), applyFilters);
+    var citta=makeMulti("Citt\u00e0", distinct(cars.map(function(c){return cityGroup((c.venue||{}).venueTown);})), applyFilters);
     var price=makeRange("Prezzo", {pre:"\u20ac"}, applyFilters);
     var km   =makeRange("Km", {post:"km"}, applyFilters);
     var reset=document.createElement("button"); reset.type="button"; reset.className="filters__reset"; reset.textContent="Azzera filtri";
@@ -562,7 +565,7 @@ a{ color:inherit; text-decoration:none; }
       if(b.length && !bs[c.brand]) ok=false;
       if(a.length && !as[(c.tech||{}).fuelType]) ok=false;
       if(y.length && !ys[c.computedVehicleYear]) ok=false;
-      if(s.length && !ss[(c.venue||{}).venueTown]) ok=false;
+      if(s.length && !ss[cityGroup((c.venue||{}).venueTown)]) ok=false;
       var price=c.displayPrice||c.price||0;
       if(pmn!=null && price<pmn) ok=false;
       if(pmx!=null && price>pmx) ok=false;
