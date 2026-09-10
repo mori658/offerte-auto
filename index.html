@@ -152,11 +152,13 @@ a{ color:inherit; text-decoration:none; }
 .card__meta{ font-size:12.5px; color:var(--ink-soft); border-top:1px solid var(--card-line2); border-bottom:1px solid var(--card-line2); padding:9px 0; }
 .card__meta span+span::before{ content:"|"; margin:0 7px; color:#c3ccd4; }
 
-.price{ margin-top:auto; }
-.price__market{ display:flex; align-items:baseline; gap:7px; flex-wrap:wrap; margin-bottom:2px; }
-.price__label{ font-size:11px; color:var(--ink-soft); }
-.price__old{ font-size:13px; color:#9aa7b2; text-decoration:line-through; }
-.price__now{ font-size:26px; font-weight:800; color:var(--accent); line-height:1; display:block; margin-top:0; }
+.price{ margin-top:auto; display:flex; align-items:flex-end; justify-content:space-between; gap:10px; }
+.price__col{ display:flex; flex-direction:column; flex:1 1 0; min-width:0; }
+.price__col--right{ align-items:flex-end; text-align:right; }
+.price__label{ font-size:10.5px; color:var(--ink-soft); font-weight:600; text-transform:uppercase; letter-spacing:.2px; margin-bottom:2px; line-height:1.25; white-space:normal; overflow-wrap:break-word; }
+.price__amount{ font-size:22px; font-weight:800; line-height:1; white-space:nowrap; }
+.price__amount--std{ color:var(--ink); }
+.price__amount--promo{ color:var(--accent); }
 .card__where{ display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-soft); }
 .card__where .pin{ color:var(--accent-2); flex:0 0 auto; }
 .card__where strong{ color:var(--ink); font-weight:700; }
@@ -416,10 +418,11 @@ a{ color:inherit; text-decoration:none; }
     var slide0 = first
       ? '<div class="slider__slide"><img src="'+esc(first)+'" alt="'+esc(car.brand+" "+car.model)+'" loading="lazy"></div>'
       : '<div class="slider__slide"></div>';
-    var market=car.marketPrice;
     var shown=finalPrice(car);
-    var priceMarket=(market&&market>shown)
-      ? '<div class="price__market"><span class="price__label">Prezzo medio di mercato</span><span class="price__old">&euro; '+num(market)+'</span></div>' : "";
+    var std=car.standardPrice;
+    var priceLeft = std
+      ? '<div class="price__col"><span class="price__label">Prezzo senza vincoli</span><span class="price__amount price__amount--std">&euro; '+num(std)+'</span></div>'
+      : '<div class="price__col"></div>';
     var version=esc(car.label||car.version||"");
     var tags=badges(car);
     var town=(car.venue&&car.venue.venueTown)?esc(car.venue.venueTown):"";
@@ -435,7 +438,9 @@ a{ color:inherit; text-decoration:none; }
         (tags?'<div class="card__tags">'+tags+'</div>':'')+
         '<div class="card__meta">'+metaLine(car)+'</div>'+
         (town?'<div class="card__where">'+PIN+'<span>Disponibile a: <strong>'+town+'</strong></span></div>':'')+
-        '<div class="price">'+priceMarket+'<span class="price__now">&euro; '+num(shown)+'</span></div>'+
+        '<div class="price">'+priceLeft+
+          '<div class="price__col price__col--right"><span class="price__label">Prezzo promo con finanziamento</span><span class="price__amount price__amount--promo">&euro; '+num(shown)+'</span></div>'+
+        '</div>'+
         '<button class="cta" type="button" data-flip="1">Richiedi info</button>'+
       '</div>';
   }
