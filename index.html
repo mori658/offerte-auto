@@ -19,6 +19,8 @@ window.WIDGET_CONFIG = {
   LEAD_CATEGORY: "auto.info",
   // Testo fisso inviato come commento del lead (jsonlead: comments[].content / inquiry)
   LEAD_COMMENT: "Promozione esclusiva per clienti selezionati Ferrari Motors - Consulta la lista prezzi qui https://intergeanordest.it/landing/offerte-auto-clienti-ferrari-motors",
+  // Campagna UTM standard inviata con ogni lead (jsonlead: utm_campaign)
+  UTM_CAMPAIGN: "sconti_riservati_fuori_tutto_fm",
   // Accorpamento citt\u00e0 SOLO nel filtro (la scheda mostra sempre la sede reale)
   CITY_GROUPS: { "Prevalle":"San Zeno Naviglio", "Lonato del Garda":"San Zeno Naviglio", "Mantova":"Porto Mantovano" },
   SERIALS: [
@@ -653,6 +655,7 @@ a{ color:inherit; text-decoration:none; }
       province:"", city:f.city, note:CFG.LEAD_COMMENT, privacy:true,
       dealerId:car.dealerId||"", serialNumber:car.serialNumber,
       url:CFG.DETAIL_PATH+(car.slug||""), gclid:"", fbclid:"",
+      utmCampaign:CFG.UTM_CAMPAIGN,
       privacy_promo:f.promo, privacy_survey:f.survey, privacy_communication:f.partner } };
     fetch(CFG.API_BASE+"/contact/request?key="+K,{ method:"POST",
       headers:{"Content-Type":"application/json",Accept:"application/json"}, body:JSON.stringify(body) })
